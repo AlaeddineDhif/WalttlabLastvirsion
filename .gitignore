@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+**/.smoke/out/
+**/.smoke/probeout/
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db

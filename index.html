@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WattLab · Industrial Energy Monitor</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'%3E%3Cpath d='M13 2 3 14h7l-1 8 10-12h-7l1-8z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter','ui-sans-serif','system-ui','sans-serif'],
+          mono: ['JetBrains Mono','ui-monospace','SFMono-Regular','monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body { background:#020617; }
+  .gauge-arc   { transition: stroke-dasharray .45s ease, stroke .45s ease; }
+  .gauge-needle{ transition: transform .55s cubic-bezier(.25,.8,.25,1); }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .pulse-dot{ animation: pulseDot 1.4s ease-in-out infinite; }
+  @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.25} }
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-track{ background:#0f172a; }
+  ::-webkit-scrollbar-thumb{ background:#334155; border-radius:8px; border:2px solid #0f172a; }
+  ::-webkit-scrollbar-thumb:hover{ background:#475569; }
+  .bg-grid {
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% 0%, rgba(56,189,248,.07), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 0%, rgba(129,140,248,.06), transparent),
+      repeating-linear-gradient(0deg, rgba(148,163,184,.03) 0 1px, transparent 1px 42px),
+      repeating-linear-gradient(90deg, rgba(148,163,184,.03) 0 1px, transparent 1px 42px);
+  }
+  /* dynamic state classes (not tailwind) so they always exist */
+  .pf-penalty  { border-color: rgba(248,113,113,.5)     !important; background: rgba(248,113,113,.07) !important; box-shadow: 0 0 0 1px rgba(248,113,113,.25), 0 0 26px -6px rgba(248,113,113,.45) inset; }
+  .pf-penalty .pf-num{ color:#fecaca !important; }
+  .brand-glow { filter: drop-shadow(0 0 10px rgba(56,189,248,.55)); }
+  .blink-red  { animation: blinkRed 1s steps(2,start) infinite; }
+  @keyframes blinkRed { to { background-color:#7f1d1d; } }
+</style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 font-sans antialiased min-h-screen">
+
+<!-- hidden class pre-warm for tailwind play CDN -->
+<div class="hidden">
+  <span class="text-emerald-400 bg-emerald-500/10 border-emerald-500/30"></span>
+  <span class="text-amber-400 bg-amber-500/10 border-amber-500/30"></span>
+  <span class="text-rose-400 bg-rose-500/10 border-rose-500/30"></span>
+  <span class="text-cyan-400 bg-cyan-500/10 border-cyan-500/30"></span>
+  <span class="text-slate-400 bg-slate-500/10 border-slate-500/30"></span>
+</div>
+
+<!-- ======================= HEADER ======================= -->
+<header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/85 backdrop-blur">
+  <div class="bg-grid">
+    <div class="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 sm:px-6">
+      <div class="flex items-center gap-3">
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/40 bg-cyan-400/10 shadow-[0_0_18px_-2px_rgba(56,189,248,.5)]">
+          <svg class="h-6 w-6 text-cyan-400 brand-glow" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+        </div>
+        <div class="leading-tight">
+          <h1 class="text-lg font-extrabold tracking-[.18em] text-slate-100">WATTLAB</h1>
+          <p class="text-[11px] font-medium tracking-wider text-slate-500">INDUSTRIAL ENERGY MONITOR</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+        <!-- connection pill -->
+        <div id="conPill" class="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-amber-300">
+          <span class="h-2 w-2 rounded-full bg-amber-400 pulse-dot"></span>
+          <span class="tracking-wider">CONNECTING</span>
+        </div>
+        <div class="hidden items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/40 px-3 py-1.5 text-slate-400 lg:flex">
+          <svg class="h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          <span id="msgCount" class="tabular">0 MSGs</span>
+        </div>
+        <div class="hidden items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/40 px-3 py-1.5 text-slate-400 md:flex">
+          <svg class="h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span id="lastUp" class="tabular">--:--:--</span>
+        </div>
+        <div class="hidden items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/40 px-3 py-1.5 text-slate-400 xl:flex">
+          <svg class="h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span id="clock" class="tabular">--:--:--</span>
+        </div>
+
+        <!-- demo toggle -->
+        <button id="demoBtn" class="flex items-center gap-2 rounded-lg border border-violet-400/40 bg-violet-500/10 px-3 py-1.5 text-[11px] font-sans font-semibold tracking-wider text-violet-300 hover:bg-violet-500/20">
+          <span id="demoDot" class="h-2 w-2 rounded-full bg-violet-400 pulse-dot"></span> DEMO FEED
+        </button>
+        <!-- settings -->
+        <button id="settingsBtn" class="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/40 px-3 py-1.5 font-sans text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-slate-700/40">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          SETTINGS
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ======================= PENALTY BANNER ======================= -->
+<div id="penaltyBanner" class="hidden border-b border-red-500/40 bg-red-950/60 backdrop-blur">
+  <div class="mx-auto flex max-w-[1720px] items-center justify-between gap-4 px-4 py-2 sm:px-6">
+    <div class="flex items-center gap-3">
+      <svg class="h-5 w-5 shrink-0 text-red-400 blink-red rounded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+      </svg>
+      <p class="text-[12px] font-bold tracking-wider text-red-300">POWER FACTOR PENALTY ALERT</p>
+    </div>
+    <p class="hidden font-mono text-[11px] text-red-400 sm:block">Cos φ <span id="penaltyVal" class="font-bold text-red-300 tabular">0.00</span> &lt; 0.85 for <span id="penaltyDur" class="font-bold text-red-300 tabular">0s</span></p>
+  </div>
+</div>
+
+<!-- ======================= MAIN ======================= -->
+<main class="mx-auto max-w-[1720px] space-y-5 px-4 py-5 sm:px-6">
+
+  <!-- ======================= GAUGE CARDS ======================= -->
+  <section id="cards" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+
+    <!-- VOLTAGE -->
+    <div id="card-voltage" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5h-4l-1.5 5L8 8m0 0v6m0-6-3.5 3M15 5l3 3-3 3M20 19H4l4-6"/></svg>
+          VOLTAGE
+        </span>
+        <span id="tag-voltage" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+      </div>
+      <div id="g-voltage" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-voltage" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-voltage" class="mt-1 text-[11px] text-slate-500">V</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-voltage">0 – 500 V</div>
+          <div id="time-voltage" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURRENT -->
+    <div id="card-current" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1m0-14.2-2.1 2.1m-10 10-2.1 2.1"/></svg>
+          CURRENT
+        </span>
+        <span id="tag-current" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+      </div>
+      <div id="g-current" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-current" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-current" class="mt-1 text-[11px] text-slate-500">A</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-current">0 – 200 A</div>
+          <div id="time-current" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE POWER -->
+    <div id="card-power" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+          ACTIVE POWER
+        </span>
+        <span id="tag-power" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+      </div>
+      <div id="g-power" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-power" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-power" class="mt-1 text-[11px] text-slate-500">kW</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-power">0 – 15 kW</div>
+          <div id="time-power" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENERGY -->
+    <div id="card-energy" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-violet-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M5 8h.01M9 8h.01M5 14h5"/></svg>
+          ENERGY
+        </span>
+        <span id="tag-energy" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+      </div>
+      <div id="g-energy" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-energy" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-energy" class="mt-1 text-[11px] text-slate-500">kWh</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-energy">CUMULATIVE</div>
+          <div id="time-energy" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FREQUENCY -->
+    <div id="card-frequency" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M2 17c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/></svg>
+          FREQUENCY
+        </span>
+        <span id="tag-frequency" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+      </div>
+      <div id="g-frequency" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-frequency" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-frequency" class="mt-1 text-[11px] text-slate-500">Hz</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-frequency">45 – 55 Hz</div>
+          <div id="time-frequency" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COS PHI -->
+    <div id="card-cosphi" class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 transition-colors">
+      <div class="flex items-center justify-between">
+        <span class="flex items-center gap-2 text-[11px] font-bold tracking-wider text-slate-300">
+          <svg class="h-4 w-4 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M12 3a9 9 0 0 1 0 18"/></svg>
+          COS φ · PF
+        </span>
+        <span class="flex items-center gap-1.5">
+          <span id="tag-cosphi" class="rounded-md border border-slate-600/50 bg-slate-700/30 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-slate-400">--</span>
+          <span id="pfBadge" class="hidden items-center gap-1 rounded-md border border-rose-500/50 bg-rose-500/15 px-2 py-0.5 text-[10px] font-bold tracking-wider text-rose-300 pulse-dot">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          PENALTY
+        </span>
+      </div>
+      <div id="g-cosphi" class="mx-auto mb-2 mt-1 w-full max-w-[240px]"></div>
+      <div class="flex items-end justify-between leading-none">
+        <div>
+          <div id="val-cosphi" class="pf-num text-[28px] font-bold tabular text-slate-100">--.-</div>
+          <div id="unit-cosphi" class="mt-1 text-[11px] text-slate-500">cos φ</div>
+        </div>
+        <div class="text-right text-[10px] leading-4 text-slate-500">
+          <div class="tabular" id="range-cosphi">0 – 1</div>
+          <div id="time-cosphi" class="tabular">--:--:--</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= CHARTS ======================= -->
+  <section class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">VOLTAGE TREND</h2>
+        <span id="chV" class="font-mono text-[11px] text-sky-400 tabular">--.- V</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-voltage"></canvas></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">CURRENT TREND</h2>
+        <span id="chI" class="font-mono text-[11px] text-amber-400 tabular">--.- A</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-current"></canvas></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">ACTIVE POWER TREND</h2>
+        <span id="chP" class="font-mono text-[11px] text-emerald-400 tabular">--.- kW</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-power"></canvas></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">ENERGY ACCUMULATED</h2>
+        <span id="chE" class="font-mono text-[11px] text-violet-400 tabular">--,- kWh</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-energy"></canvas></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">FREQUENCY TREND</h2>
+        <span id="chF" class="font-mono text-[11px] text-blue-400 tabular">--.- Hz</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-frequency"></canvas></div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[11px] font-bold tracking-wider text-slate-300">POWER FACTOR TREND</h2>
+        <span id="chPF" class="font-mono text-[11px] text-indigo-400 tabular">--.- cos φ</span>
+      </div>
+      <div class="relative h-44"><canvas id="chart-cosphi"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ======================= TELEMETRY LOG ======================= -->
+  <section class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <h2 class="text-[11px] font-bold tracking-wider text-slate-300">LIVE TELEMETRY INSPECTOR</h2>
+      <div class="flex items-center gap-3 font-mono text-[10px] text-slate-500">
+        <span>Broker: <span class="text-slate-400" id="brokerShown">…</span></span>
+        <span>Topic: <span class="text-slate-400">wattlab/telemetry</span></span>
+        <span>Client: <span class="text-slate-400" id="clientShown">…</span></span>
+      </div>
+    </div>
+    <pre id="rawPre" class="max-h-32 overflow-auto whitespace-pre-wrap rounded-lg border border-slate-800 bg-slate-950/80 p-3 font-mono text-[11px] leading-5 text-slate-500">Awaiting telemetry packets…</pre>
+  </section>
+</main>
+
+<!-- ======================= SETTINGS MODAL ======================= -->
+<div id="settingsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl">
+    <div class="mb-4 flex items-center justify-between">
+      <h2 class="text-sm font-bold tracking-wider text-slate-100">MQTT CONNECTION SETTINGS</h2>
+      <button id="closeSettings" class="rounded-lg p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">HOST</span>
+          <input id="setHost" type="text" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">PORT (SSL WSS)</span>
+          <input id="setPort" type="number" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">PATH</span>
+          <input id="setPath" type="text" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">USERNAME</span>
+          <input id="setUser" type="text" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">PASSWORD</span>
+          <input id="setPass" type="password" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+        <label class="block">
+          <span class="mb-1 block text-[10px] font-semibold tracking-wider text-slate-500">TOPIC</span>
+          <input id="setTopic" type="text" class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 font-mono text-[12px] text-slate-200 focus:border-cyan-500 focus:outline-none" />
+        </label>
+      </div>
+      <p class="rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-[11px] leading-5 text-slate-500">
+        The dashboard connects over secure WebSockets (<span class="font-mono text-slate-400">wss://…:8884/mqtt</span>) to your HiveMQ Cloud cluster and subscribes to <span class="font-mono text-slate-400">wattlab/telemetry</span>. Fill in the credentials of an MQTT user you created in your HiveMQ Cloud console. Accepted payload keys: <span class="font-mono text-slate-400">voltage, current, power, energy, frequency, cosPhi</span> (or <span class="font-mono text-slate-400">cos_phi / pf / power_factor</span>), JSON or <span class="font-mono text-slate-400">key:value,key:value</span>.
+      </p>
+    </div>
+    <div class="mt-5 flex justify-end gap-2">
+      <button id="cancelSettings" class="rounded-lg border border-slate-700 px-4 py-2 text-[11px] font-semibold tracking-wider text-slate-300 hover:bg-slate-800">CANCEL</button>
+      <button id="saveSettings" class="rounded-lg bg-cyan-500 px-4 py-2 text-[11px] font-bold tracking-wider text-slate-950 hover:bg-cyan-400">SAVE &amp; RECONNECT</button>
+    </div>
+  </div>
+</div>
+
+<footer class="border-t border-slate-800/70 py-4 text-center font-mono text-[10px] tracking-wider text-slate-600">
+  WATTLAB · POWERED BY HIVEMQ CLOUD · SUBSCRIBER TOPIC <span class="text-slate-500">wattlab/telemetry</span> · INDUSTRIAL ENERGY INTELLIGENCE
+</footer>
+
+<!-- ======================= SCRIPTS ======================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/mqtt@4.3.7/dist/mqtt.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---------------- settings ---------------- */
+  var LS_KEY = 'wattlab:settings';
+  var DEFAULTS = {
+    host: '',
+    port: 8884,
+    path: '/mqtt',
+    user: '',
+    pass: '',
+    topic: 'wattlab/telemetry'
+  };
+  var settings;
+  try { settings = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); }
+  catch (e) { settings = Object.assign({}, DEFAULTS); }
+
+  /* ---------------- theme ---------------- */
+  var THEME = {
+    voltage:   { color: '#38bdf8', chart: '56,189,248' },
+    current:   { color: '#f59e0b', chart: '245,158,11' },
+    power:     { color: '#34d399', chart: '52,211,153' },
+    energy:    { color: '#a78bfa', chart: '167,139,250' },
+    frequency: { color: '#60a5fa', chart: '96,165,250' },
+    cosphi:    { color: '#818cf8', chart: '129,140,248' }
+  };
+  var pfPenaltyColor = '#f87171';
+
+  /* ---------------- dom refs ---------------- */
+  var $ = function (id) { return document.getElementById(id); };
+
+  var conPill = $('conPill'), msgCountEl = $('msgCount'), lastUpEl = $('lastUp');
+
+  function setStatus(state) {
+    var map = {
+      connecting: { cls: 'border-amber-500/40 bg-amber-500/10 text-amber-300', dot: 'bg-amber-400', label: 'CONNECTING' },
+      connected:  { cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300', dot: 'bg-emerald-400', label: 'CONNECTED' },
+      offline:    { cls: 'border-slate-600/50 bg-slate-800/40 text-slate-400', dot: 'bg-slate-400', label: 'OFFLINE' },
+      error:      { cls: 'border-red-500/40 bg-red-500/10 text-red-300', dot: 'bg-red-400', label: 'ERROR' }
+    };
+    var m = map[state] || map.offline;
+    conPill.className = 'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-mono tracking-wider ' + m.cls;
+    var dot = conPill.querySelector('span');
+    dot.className = 'h-2 w-2 rounded-full ' + m.dot + ' pulse-dot';
+    conPill.lastElementChild.textContent = m.label;
+  }
+
+  /* ---------------- formatting ---------------- */
+  function fmt(v, d) {
+    if (v === null || v === undefined || !isFinite(v)) return '--';
+    return Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function hms(ts) { var d = new Date(ts); return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()); }
+
+  var CHIP = {
+    emerald: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30',
+    amber:   'text-amber-400 bg-amber-500/10 border-amber-500/30',
+    rose:    'text-rose-400 bg-rose-500/10 border-rose-500/30',
+    cyan:    'text-cyan-400 bg-cyan-500/10 border-cyan-500/30',
+    slate:   'text-slate-400 bg-slate-500/10 border-slate-500/30'
+  };
+
+  function tagInfo(key, v) {
+    if (v === null || v === undefined) return { t: '--', c: 'slate' };
+    switch (key) {
+      case 'voltage':
+        return (v >= 210 && v <= 253) ? { t: 'NOMINAL', c: 'emerald' } : { t: 'OUT OF RANGE', c: 'amber' };
+      case 'frequency':
+        return (v >= 49.8 && v <= 50.2) ? { t: '50 Hz', c: 'emerald' } : { t: 'OFF GRID', c: 'amber' };
+      case 'cosphi':
+        if (v >= 0.95) return { t: 'GOOD', c: 'emerald' };
+        if (v >= 0.85) return { t: 'WARNING', c: 'amber' };
+        return { t: 'PENALTY', c: 'rose' };
+      case 'energy':
+        return { t: 'CUMULATIVE', c: 'cyan' };
+      default:
+        return { t: 'LIVE', c: 'cyan' };
+    }
+  }
+
+  var tagState = {};
+  function setTag(key, v) {
+    var info = tagInfo(key, v);
+    if (tagState[key] === info.t) return;
+    tagState[key] = info.t;
+    var el = $('tag-' + key);
+    if (el) el.className = 'rounded-md border px-2 py-0.5 text-[10px] font-semibold tracking-wider ' + CHIP[info.c];
+  }
+
+  /* ---------------- gauge factory ---------------- */
+  var CX = 100, CY = 104, R = 86;
+
+  function polar(r, a) {
+    var rad = a * Math.PI / 180;
+    return { x: CX + r * Math.cos(rad), y: CY - r * Math.sin(rad) };
+  }
+  function arcD(r, a0, a1) {
+    var s = polar(r, a0), e = polar(r, a1);
+    return 'M ' + s.x.toFixed(2) + ' ' + s.y.toFixed(2) +
+           ' A ' + r + ' ' + r + ' 0 0 1 ' + e.x.toFixed(2) + ' ' + e.y.toFixed(2);
+  }
+
+  function buildGauge(containerId, opts) {
+    opts = opts || {};
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 200 122');
+    svg.setAttribute('class', 'w-full h-auto select-none');
+
+    // background arc
+    var bg = document.createElementNS(svgNS, 'path');
+    bg.setAttribute('d', arcD(R, 180, 0));
+    bg.setAttribute('fill', 'none');
+    bg.setAttribute('stroke', '#1e293b');
+    bg.setAttribute('stroke-width', '12');
+    bg.setAttribute('stroke-linecap', 'round');
+    bg.setAttribute('pathLength', '100');
+    svg.appendChild(bg);
+
+    // zones
+    (opts.zones || []).forEach(function (z) {
+      var a0 = 180 - z.from * 180, a1 = 180 - z.to * 180;
+      var p = document.createElementNS(svgNS, 'path');
+      p.setAttribute('d', arcD(R, a0, a1));
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', z.color);
+      p.setAttribute('stroke-width', '12');
+      p.setAttribute('stroke-linecap', 'butt');
+      p.setAttribute('pathLength', '100');
+      p.setAttribute('class', 'gauge-arc');
+      svg.appendChild(p);
+    });
+
+    // ticks
+    for (var i = 0; i <= 20; i++) {
+      var a = 180 - (i / 20) * 180;
+      var major = (i % 5 === 0);
+      var p1 = polar(major ? 84 : 78, a);
+      var p2 = polar(70, a);
+      var t = document.createElementNS(svgNS, 'line');
+      t.setAttribute('x1', p1.x); t.setAttribute('y1', p1.y);
+      t.setAttribute('x2', p2.x); t.setAttribute('y2', p2.y);
+      t.setAttribute('stroke', major ? '#475569' : '#334155');
+      t.setAttribute('stroke-width', major ? '2' : '1');
+      svg.appendChild(t);
+    }
+
+    // value arc
+    var val = document.createElementNS(svgNS, 'path');
+    val.setAttribute('d', arcD(R, 180, 0));
+    val.setAttribute('fill', 'none');
+    val.setAttribute('stroke', opts.color || '#38bdf8');
+    val.setAttribute('stroke-width', '12');
+    val.setAttribute('stroke-linecap', 'round');
+    val.setAttribute('pathLength', '100');
+    val.setAttribute('stroke-dasharray', '0 100');
+    val.setAttribute('class', 'gauge-arc');
+    val.setAttribute('style', 'filter:drop-shadow(0 0 5px ' + (opts.color || '#38bdf8') + ')');
+    svg.appendChild(val);
+
+    // needle
+    var needle = document.createElementNS(svgNS, 'g');
+    needle.setAttribute('class', 'gauge-needle');
+    needle.setAttribute('style', 'transform-box:view-box;transform-origin:' + CX + 'px ' + CY + 'px;transform:rotate(0deg)');
+    var nl = document.createElementNS(svgNS, 'line');
+    nl.setAttribute('x1', CX); nl.setAttribute('y1', CY);
+    nl.setAttribute('x2', CX + R * 0.62); nl.setAttribute('y2', CY);
+    nl.setAttribute('stroke', '#e2e8f0');
+    nl.setAttribute('stroke-width', '3');
+    nl.setAttribute('stroke-linecap', 'round');
+    needle.appendChild(nl);
+    svg.appendChild(needle);
+
+    // hub
+    var hub = document.createElementNS(svgNS, 'circle');
+    hub.setAttribute('cx', CX); hub.setAttribute('cy', CY); hub.setAttribute('r', '6');
+    hub.setAttribute('fill', '#0f172a');
+    hub.setAttribute('stroke', opts.color || '#38bdf8');
+    hub.setAttribute('stroke-width', '2.5');
+    svg.appendChild(hub);
+
+    $('g-' + containerId).appendChild(svg);   // containerId === param key already
+
+    var state = { value: 0, min: (opts.min || 0), max: (opts.max || 100), color: opts.color || '#38bdf8' };
+
+    function set(value, min, max, color) {
+      if (!isFinite(value) || min === undefined || max === undefined) { min = state.min; max = state.max; }
+      if (value !== null && isFinite(value)) state.value = value;
+      if (min !== undefined && isFinite(min)) state.min = min;
+      if (max !== undefined && isFinite(max) && max > state.min) state.max = max;
+      if (color) state.color = color;
+
+      var frac = (state.max > state.min) ? Math.max(0, Math.min(1, (state.value - state.min) / (state.max - state.min))) : 0;
+      var dash = (frac * 100).toFixed(2) + ' 100';
+      val.setAttribute('stroke-dasharray', dash);
+      var deg = -(180 - frac * 180);
+      needle.setAttribute('style',
+        'transform-box:view-box;transform-origin:' + CX + 'px ' + CY + 'px;transform:rotate(' + deg + 'deg)');
+      val.setAttribute('stroke', state.color);
+      val.setAttribute('style', 'filter:drop-shadow(0 0 5px ' + state.color + ')');
+      hub.setAttribute('stroke', state.color);
+    }
+
+    set(null, opts.min, opts.max, opts.color);
+    return { set: set, state: state };
+  }
+
+  /* ---------------- charts ---------------- */
+  Chart.defaults.font.family = "'JetBrains Mono', monospace";
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.animation = false;
+
+  function makeChart(param) {
+    var canvas = $('chart-' + param);
+    var t = THEME[param];
+    var ctx = canvas.getContext('2d');
+    var grad = ctx.createLinearGradient(0, 0, 0, 190);
+    grad.addColorStop(0, 'rgba(' + t.chart + ',0.25)');
+    grad.addColorStop(1, 'rgba(' + t.chart + ',0)');
+
+    var cfg = {
+      voltage:   { label: 'Voltage',  unit: 'V',   dec: 1 },
+      current:   { label: 'Current',  unit: 'A',   dec: 1 },
+      power:     { label: 'Power',    unit: 'kW',  dec: 2 },
+      energy:    { label: 'Energy',   unit: 'kWh', dec: 2 },
+      frequency: { label: 'Freq',     unit: 'Hz',  dec: 2 },
+      cosphi:    { label: 'Cos φ',    unit: '',    dec: 2 }
+    }[param];
+
+    var chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: cfg.label,
+          data: [],
+          borderColor: t.color,
+          backgroundColor: grad,
+          borderWidth: 1.6,
+          tension: 0.3,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          pointHoverBackgroundColor: t.color,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleColor: '#cbd5e1',
+            bodyColor: '#e2e8f0',
+            padding: 10,
+            boxPadding: 4,
+            callbacks: {
+              label: function (ctx) { return ' ' + fmt(ctx.parsed.y, cfg.dec) + ' ' + cfg.unit; }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 6, maxRotation: 0, font: { size: 9 } },
+            grid: { display: false }
+          },
+          y: {
+            position: 'right',
+            ticks: {
+              font: { size: 9 },
+              callback: function (v) { return fmt(v, 0); },
+              maxTicksLimit: 5
+            },
+            grid: { color: 'rgba(148,163,184,0.08)' },
+            title: { display: true, text: cfg.unit, font: { size: 9 }, color: t.color }
+          }
+        }
+      }
+    });
+
+    return {
+      chart: chart,
+      push: function (label, value) {
+        if (chart.data.labels.length > 90) { chart.data.labels.shift(); chart.data.datasets[0].data.shift(); }
+        chart.data.labels.push(label);
+        chart.data.datasets[0].data.push(value);
+        chart.update('none');
+      },
+      setColor: function (color) {
+        chart.data.datasets[0].borderColor = color;
+        chart.data.datasets[0].pointHoverBackgroundColor = color;
+        chart.options.scales.y.title.color = color;
+        chart.update('none');
+      }
+    };
+  }
+
+  var charts = {
+    voltage: makeChart('voltage'),
+    current: makeChart('current'),
+    power: makeChart('power'),
+    energy: makeChart('energy'),
+    frequency: makeChart('frequency'),
+    cosphi: makeChart('cosphi')
+  };
+
+  /* ---------------- gauges ---------------- */
+  var gauges = {
+    voltage: buildGauge('voltage', { min: 0, max: 500, color: THEME.voltage.color }),
+    current: buildGauge('current', { min: 0, max: 200, color: THEME.current.color }),
+    power: buildGauge('power', { min: 0, max: 15, color: THEME.power.color }),
+    energy: buildGauge('energy', { min: 0, max: 100, color: THEME.energy.color }),
+    frequency: buildGauge('frequency', {
+      min: 45, max: 55, color: THEME.frequency.color,
+      zones: [
+        { from: 0, to: 0.45, color: 'rgba(248,113,113,0.18)' },
+        { from: 0.55, to: 1, color: 'rgba(248,113,113,0.18)' }
+      ]
+    }),
+    cosphi: buildGauge('cosphi', {
+      min: 0, max: 1, color: THEME.cosphi.color,
+      zones: [
+        { from: 0, to: 0.85, color: 'rgba(248,113,113,0.35)' },
+        { from: 0.85, to: 0.95, color: 'rgba(251,191,36,0.25)' }
+      ]
+    })
+  };
+
+  /* ---------------- payload extraction ---------------- */
+  var ALIASES = {
+    voltage:   ['voltage', 'v', 'volt', 'u'],
+    current:   ['current', 'i', 'amp', 'amps', 'current_a'],
+    power:     ['power', 'activepower', 'active_power', 'p', 'w', 'kw', 'pw'],
+    energy:    ['energy', 'kwh', 'energ', 'meter', 'energy_kwh'],
+    frequency: ['frequency', 'freq', 'f', 'hz'],
+    cosphi:    ['cosphi', 'cos_phi', 'cos-phi', 'pf', 'powerfactor', 'power_factor', 'phi']
+  };
+  var paramIndex = { voltage: 0, current: 1, power: 2, energy: 3, frequency: 4, cosphi: 5 };
+
+  function scalar(v) {
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string') { var n = parseFloat(v.replace(',', '.')); return isFinite(n) ? n : null; }
+    if (v && typeof v === 'object') {
+      for (var k in v) {
+        if (/value|val|magnitude|ScaledValue|normal/i.test(k)) { var r = scalar(v[k]); if (r !== null) return r; }
+      }
+    }
+    return null;
+  }
+
+  function walkKeys(obj, key) {
+    var found = null;
+    (function go(o) {
+      if (!o || typeof o !== 'object' || found !== null) return;
+      var low = key.toLowerCase();
+      if (typeof o[low] !== 'undefined') { found = o[low]; return; }
+      for (var k in o) {
+        if (typeof o[k] === 'object') go(o[k]);
+      }
+    })(obj);
+    return found;
+  }
+
+  function extractValues(obj) {
+    var out = {};
+    for (var param in ALIASES) {
+      for (var i = 0; i < ALIASES[param].length; i++) {
+        var v = walkKeys(obj, ALIASES[param][i]);
+        if (v !== null && v !== undefined) {
+          var num = scalar(v);
+          if (num !== null) { out[param] = num; break; }
+        }
+      }
+    }
+    return out;
+  }
+
+  function detectPayload(text) {
+    var obj = null;
+    try { obj = JSON.parse(text); } catch (e) { obj = null; }
+    if (obj) {
+      if (obj.data && typeof obj.data === 'object') obj = obj.data;
+      return { obj: obj, text: text };
+    }
+    // tolerant CSV style: key:value,key:value
+    var pairs = {};
+    text.split(',').forEach(function (seg) {
+      var m = /^\s*([^:=]+)[:=]\s*([^:]+?)\s*$/.exec(seg);
+      if (m) pairs[m[1].trim().toLowerCase()] = parseFloat(m[2].replace(',', '.'));
+    });
+    if (Object.keys(pairs).length) return { obj: pairs, text: text };
+    return { obj: { text: text }, text: text };
+  }
+
+  /* ---------------- penalty handling ---------------- */
+  var penalty = { active: false, since: null };
+  var pfCard = $('card-cosphi'), pfBadge = $('pfBadge'), banner = $('penaltyBanner');
+
+  function setPenalty(active, pf) {
+    if (active === penalty.active && pf === undefined) return;
+    penalty.active = active;
+    if (active && penalty.since === null) penalty.since = Date.now();
+    if (!active) penalty.since = null;
+
+    if (banner) {
+      banner.classList.toggle('hidden', !active);
+      if (active) $('penaltyVal').textContent = fmt(pf, 2);
+    }
+    if (pfCard) pfCard.classList.toggle('pf-penalty', active);
+    if (pfBadge) pfBadge.classList.toggle('hidden', !active);
+    charts.cosphi.setColor(active ? pfPenaltyColor : THEME.cosphi.color);
+  }
+
+  /* ---------------- dashboard update ---------------- */
+  var lastVals = {};
+
+  function displayPower(v) {
+    return { num: v >= 1000 ? v / 1000 : v, unit: v >= 1000 ? 'kW' : 'W', dec: v >= 1000 ? 2 : 0 };
+  }
+
+  function onTelemetry(text) {
+    var packet = detectPayload(text);
+    var vals = extractValues(packet.obj);
+    var ts = Date.now();
+    var now = hms(ts);
+
+    msgCountEl.textContent = (parseInt(msgCountEl.textContent, 10) || 0) + 1 + ' MSGs';
+    lastUpEl.textContent = now;
+    lastVals = vals;
+
+    var powers = [];
+    if (vals.voltage !== undefined) {
+      gauges.voltage.set(vals.voltage);
+      $('val-voltage').textContent = fmt(vals.voltage, 1);
+      $('time-voltage').textContent = now;
+      $('chV').textContent = fmt(vals.voltage, 1) + ' V';
+      charts.voltage.push(now, vals.voltage);
+      setTag('voltage', vals.voltage);
+    }
+    if (vals.current !== undefined) {
+      gauges.current.set(vals.current);
+      $('val-current').textContent = fmt(vals.current, 1);
+      $('time-current').textContent = now;
+      $('chI').textContent = fmt(vals.current, 1) + ' A';
+      charts.current.push(now, vals.current);
+      setTag('current', vals.current);
+    }
+    if (vals.power !== undefined) {
+      var dp = displayPower(vals.power);
+      gauges.power.set(dp.unit === 'kW' ? dp.num : dp.num, 0, Math.max(gauges.power.state.max, dp.num * 1.2));
+      $('val-power').textContent = fmt(dp.num, dp.dec);
+      $('unit-power').textContent = dp.unit;
+      $('range-power').textContent = '0 – ' + fmt(Math.max(gauges.power.state.max, dp.num * 1.2), 1) + ' ' + dp.unit;
+      $('time-power').textContent = now;
+      $('chP').textContent = fmt(vals.power >= 1000 ? vals.power / 1000 : vals.power, 2) + (vals.power >= 1000 ? ' kW' : ' W');
+      charts.power.push(now, vals.power / 1000);
+      setTag('power', vals.power);
+    }
+    if (vals.energy !== undefined) {
+      gauges.energy.set(vals.energy, 0, Math.max(gauges.energy.state.max, vals.energy * 1.15));
+      $('val-energy').textContent = fmt(vals.energy, vals.energy > 10000 ? 0 : 2);
+      $('time-energy').textContent = now;
+      $('chE').textContent = fmt(vals.energy, vals.energy > 10000 ? 0 : 2) + ' kWh';
+      charts.energy.push(now, vals.energy);
+      setTag('energy', vals.energy);
+    }
+    if (vals.frequency !== undefined) {
+      gauges.frequency.set(vals.frequency);
+      $('val-frequency').textContent = fmt(vals.frequency, 2);
+      $('time-frequency').textContent = now;
+      $('chF').textContent = fmt(vals.frequency, 2) + ' Hz';
+      charts.frequency.push(now, vals.frequency);
+      setTag('frequency', vals.frequency);
+    }
+    if (vals.cosphi !== undefined) {
+      var raw = vals.cosphi;
+      var abs = Math.abs(raw);
+      gauges.cosphi.set(abs, 0, 1, raw < 0.85 ? pfPenaltyColor : THEME.cosphi.color);
+      $('val-cosphi').textContent = fmt(abs, 2);
+      $('unit-cosphi').textContent = (raw < 0 ? 'cos φ · CAPACITIVE' : 'cos φ');
+      $('time-cosphi').textContent = now;
+      $('chPF').textContent = fmt(abs, 2) + ' cos φ';
+      charts.cosphi.push(now, abs);
+      setTag('cosphi', raw);
+      setPenalty(raw < 0.85, raw);
+    }
+
+    // raw preview
+    var pre = $('rawPre');
+    pre.textContent = '[ ' + now + ' ] ' + text + '\n' + JSON.stringify(vals, null, 2);
+  }
+
+  /* ---------------- demo feed ---------------- */
+  var demoOn = true, demoTimer = null, demoEnergy = 12653.47, demoT = 0;
+
+  function demoStep() {
+    demoT += 1.6;
+    var v = 230 + 2.2 * Math.sin(demoT / 9) + (Math.random() - 0.5) * 2.5;
+    var i = 13.8 + 2.4 * Math.sin(demoT / 6 + 1) + (Math.random() - 0.5) * 2;
+    var p = v * i * 0.94;
+    var pf = 0.93 + 0.09 * Math.sin(demoT / 5) + (Math.random() - 0.5) * 0.02;
+    demoEnergy += p * 1.6 / 3600000;
+    var f = 50.02 + (Math.random() - 0.5) * 0.06;
+    var payload = JSON.stringify({
+      ts: new Date().toISOString(),
+      voltage: +v.toFixed(2),
+      current: +i.toFixed(3),
+      power: +p.toFixed(2),
+      energy: +demoEnergy.toFixed(3),
+      frequency: +f.toFixed(3),
+      cosPhi: +pf.toFixed(3),
+      src: 'demo'
+    });
+    onTelemetry(payload);
+  }
+
+  function setDemo(on) {
+    demoOn = on;
+    var btn = $('demoBtn'), dot = $('demoDot');
+    if (on) {
+      btn.classList.add('border-violet-400/60', 'bg-violet-500/20');
+      dot.classList.add('bg-violet-300');
+      clearInterval(demoTimer);
+      demoTimer = setInterval(demoStep, 1600);
+    } else {
+      btn.classList.remove('border-violet-400/60', 'bg-violet-500/20');
+      dot.classList.remove('bg-violet-300');
+      clearInterval(demoTimer);
+    }
+  }
+
+  /* ---------------- mqtt ---------------- */
+  var client = null;
+
+  function connect() {
+    var url = 'wss://' + settings.host + ':' + settings.port + settings.path;
+    $('brokerShown').textContent = url;
+    $('clientShown').textContent = 'wattlab_dash_' + Math.random().toString(16).slice(2, 8);
+    try {
+      client = mqtt.connect(url, {
+        clientId: 'wattlab_dash_' + Math.random().toString(16).slice(2, 8),
+        username: settings.user,
+        password: settings.pass,
+        clean: true,
+        reconnectPeriod: 4000,
+        connectTimeout: 10000,
+        keepalive: 30
+      });
+    } catch (err) {
+      setStatus('offline');
+      return;
+    }
+
+    client.on('connect', function () {
+      setStatus('connected');
+      var topics = settings.topic.split(',').map(function (t) { return t.trim(); });
+      topics.forEach(function (t) { client.subscribe(t, { qos: 0 }); });
+    });
+    client.on('reconnect', function () { setStatus('connecting'); });
+    client.on('close', function () { setStatus('offline'); });
+    client.on('offline', function () { setStatus('offline'); });
+    client.on('error', function (err) { setStatus(err && err.message && /unauth|not auth|connection refused|closed/i.test(err.message) ? 'error' : 'connecting'); });
+    client.on('message', function (topic, payload) {
+      var tops = settings.topic.split(',').map(function (t) { return t.trim(); });
+      if (tops.indexOf(topic) >= 0) {
+        if (demoOn) setDemo(false);
+        try { onTelemetry(payload.toString()); } catch (e) { /* ignore */ }
+      }
+    });
+    setTimeout(function () {
+      if (conPill.textContent.indexOf('CONNECTING') >= 0 && !demoActive()) setStatus('connecting');
+    }, 12000);
+  }
+
+  function demoActive() { return demoOn; }
+  function disconnect() { if (client) { try { client.end(true); } catch (e) {} } }
+
+  /* ---------------- settings ui ---------------- */
+  var modal = $('settingsModal');
+  function openModal() {
+    $('setHost').value = settings.host;
+    $('setPort').value = settings.port;
+    $('setPath').value = settings.path;
+    $('setUser').value = settings.user;
+    $('setPass').value = settings.pass;
+    $('setTopic').value = settings.topic;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+  function closeModal() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+
+  $('settingsBtn').addEventListener('click', openModal);
+  $('closeSettings').addEventListener('click', closeModal);
+  $('cancelSettings').addEventListener('click', closeModal);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  $('saveSettings').addEventListener('click', function () {
+    settings = {
+      host: $('setHost').value.trim() || DEFAULTS.host,
+      port: parseInt($('setPort').value, 10) || DEFAULTS.port,
+      path: $('setPath').value.trim() || DEFAULTS.path,
+      user: $('setUser').value.trim(),
+      pass: $('setPass').value,
+      topic: $('setTopic').value.trim() || DEFAULTS.topic
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(settings));
+    closeModal();
+    disconnect();
+    connect();
+  });
+
+  /* ---------------- clock & init ---------------- */
+  $('clock').textContent = hms(Date.now());
+  setInterval(function () { $('clock').textContent = hms(Date.now()); }, 1000);
+  $('demoBtn').addEventListener('click', function () { setDemo(!demoOn); });
+
+  window.addEventListener('beforeunload', disconnect);
+  setDemo(true);
+  connect();
+
+  setTimeout(function () {
+    if (demoOn) {
+      // keep demo visible but tell user live feed expected
+      $('rawPre').textContent = 'SIMULATION MODE — no live packet yet.\nConnect your device/edge gateway publishing JSON to wattlab/telemetry with keys:\n  voltage, current, power, energy, frequency, cosPhi (or pf / cos_phi).\n\nOnce a real packet arrives, the demo feed switches off automatically.';
+    }
+  }, 5000);
+
+  setPenalty(false);
+  setStatus('connecting');
+
+  setInterval(function () {
+    if (penalty.active && $('penaltyDur')) {
+      $('penaltyDur').textContent = fmt(Math.round((Date.now() - penalty.since) / 1000), 0) + 's';
+    }
+  }, 1000);
+
+  // expose for debugging
+  window.__wattlab = { settings: settings, onTelemetry: onTelemetry };
+})();
+</script>
+</body>
+</html>

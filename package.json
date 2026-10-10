@@ -1,0 +1,24 @@
+{
+  "name": "wattlab-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WattLab — Industrial energy monitoring platform (MQTT -> REST/Socket.io -> React)",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n BACKEND,FRONTEND -c cyan,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "start:backend": "npm run start -w backend",
+    "build": "npm run build -w frontend",
+    "preview": "npm run preview -w frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
