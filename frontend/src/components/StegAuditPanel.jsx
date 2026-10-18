@@ -5,10 +5,10 @@ import { fmt, fmtKva, fmtDT } from '../lib/format';
 import { STATUS } from '../lib/tags';
 
 const RECOMMENDATION_META = {
-  upgrade: { cls: 'border-rose-200 bg-rose-50 text-rose-700', icon: ArrowUpRight, label: 'Recommended action' },
-  downgrade: { cls: 'border-sky-200 bg-sky-50 text-sky-700', icon: ArrowDownRight, label: 'Recommended action' },
+  upgrade: { cls: 'border-red-200 bg-red-50 text-red-700', icon: ArrowUpRight, label: 'Recommended action' },
+  downgrade: { cls: 'border-brand-200 bg-brand-50 text-brand-700', icon: ArrowDownRight, label: 'Recommended action' },
   watch: { cls: 'border-amber-200 bg-amber-50 text-amber-700', icon: AlertTriangle, label: 'Review' },
-  adequate: { cls: 'border-emerald-200 bg-emerald-50 text-emerald-700', icon: CheckCircle2, label: 'All good' }
+  adequate: { cls: 'border-energy-200 bg-energy-50 text-energy-700', icon: CheckCircle2, label: 'All good' }
 };
 
 function DemandBar({ contractedPower, peak, tolerance }) {
@@ -30,10 +30,10 @@ function DemandBar({ contractedPower, peak, tolerance }) {
         />
         {peak > 0 && (
           <div
-            className="absolute top-0 z-10 h-full w-1.5 -translate-x-1/2 rounded bg-rose-600"
+            className="absolute top-0 z-10 h-full w-1.5 -translate-x-1/2 rounded bg-red-600"
             style={{ left: `${Math.min(peakLeft, 100)}%` }}
           >
-            <span className="absolute right-1/2 top-[-18px] translate-x-1/2 whitespace-nowrap font-mono text-[9px] font-bold text-rose-700">
+            <span className="absolute right-1/2 top-[-18px] translate-x-1/2 whitespace-nowrap font-mono text-[9px] font-bold text-red-700">
               Pai
             </span>
           </div>
@@ -47,7 +47,7 @@ function DemandBar({ contractedPower, peak, tolerance }) {
           <span className="h-2.5 w-2.5 rounded-sm bg-amber-300" /> {Math.round(tolerance * 100)}% tolerance
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-600" /> Pai {fmtKva(peak)} peak
+          <span className="h-2.5 w-2.5 rounded-full bg-red-600" /> Pai {fmtKva(peak)} peak
         </span>
       </div>
     </div>
@@ -72,7 +72,7 @@ export default function StegAuditPanel() {
 
   if (loading && !data) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+      <section className="wl-card p-5">
         <p className="text-sm text-slate-500">Loading tariff audit…</p>
       </section>
     );
@@ -85,11 +85,11 @@ export default function StegAuditPanel() {
   const RecIcon = meta.icon;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+    <section className="wl-card p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Building2 className="h-4 w-4 text-slate-500" />
-          <h2 className="text-[13px] font-bold tracking-wide text-slate-900">STEG Tariff &amp; Subscription Audit</h2>
+          <h2 className="wl-section-title">STEG tariff &amp; subscription audit</h2>
           <span className={`ml-1 flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-semibold ${st.cls}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} /> {st.label}
           </span>
@@ -103,7 +103,7 @@ export default function StegAuditPanel() {
       </div>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-lg border border-slate-200 bg-canvasAlt/70 p-3.5">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Contracted power Ps</span>
             <Scale className="h-3.5 w-3.5 text-slate-400" />
@@ -124,7 +124,7 @@ export default function StegAuditPanel() {
             <button
               onClick={apply}
               disabled={!dirty || busy}
-              className="rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-800 disabled:opacity-40"
+              className="rounded-md bg-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-700 disabled:opacity-40"
             >
               {busy ? 'Saving…' : saved ? 'Saved' : 'Apply'}
             </button>
@@ -134,13 +134,13 @@ export default function StegAuditPanel() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-lg border border-slate-200 bg-canvasAlt/70 p-3.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Peak reached Pai</span>
           <div className="mt-1 text-2xl font-bold tabular text-slate-900">{fmtKva(peak.kva)}</div>
           <div className="mt-0.5 font-mono text-[10px] text-slate-400">{peak.at ? new Date(peak.at).toLocaleTimeString() : '--:--:--'}</div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-lg border border-slate-200 bg-canvasAlt/70 p-3.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Utilization</span>
           <div className="mt-1 flex items-end gap-1.5">
             <span className="text-2xl font-bold tabular text-slate-900">{fmt(audit.utilization * 100, 0)}%</span>
@@ -148,17 +148,17 @@ export default function StegAuditPanel() {
           </div>
           <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
             <div
-              className={`h-full rounded-full ${audit.utilization >= 1 ? 'bg-rose-500' : audit.utilization >= 0.9 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+              className={`h-full rounded-full ${audit.utilization >= 1 ? 'bg-red-500' : audit.utilization >= 0.9 ? 'bg-amber-500' : 'bg-energy-500'}`}
               style={{ width: `${Math.min(audit.utilization * 100, 100)}%` }}
             />
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
+        <div className="rounded-lg border border-slate-200 bg-canvasAlt/70 p-3.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
             {audit.exceeded ? 'Overrun beyond Ps' : 'Margin to Ps'}
           </span>
-          <div className={`mt-1 text-2xl font-bold tabular ${audit.exceeded ? 'text-rose-700' : 'text-emerald-700'}`}>
+          <div className={`mt-1 text-2xl font-bold tabular ${audit.exceeded ? 'text-red-700' : 'text-energy-700'}`}>
             {fmtKva(audit.exceeded ? audit.overrun : Math.max(0, audit.recommendation.headroom))}
           </div>
           <div className="mt-0.5 font-mono text-[10px] text-slate-400">
@@ -175,29 +175,29 @@ export default function StegAuditPanel() {
         <div
           className={`rounded-lg border p-4 ${
             audit.status === 'critical'
-              ? 'border-rose-200 bg-rose-50'
+              ? 'border-red-200 bg-red-50'
               : audit.status === 'watch'
                 ? 'border-amber-200 bg-amber-50'
-                : 'border-emerald-200 bg-emerald-50'
+                : 'border-energy-200 bg-energy-50'
           }`}
         >
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-700">
-            {audit.status === 'critical' ? <ShieldAlert className="h-4 w-4 text-rose-600" /> : <TrendingUp className="h-4 w-4" />}
+            {audit.status === 'critical' ? <ShieldAlert className="h-4 w-4 text-red-600" /> : <TrendingUp className="h-4 w-4" />}
             {audit.status === 'critical' ? 'Penalty risk estimation' : 'Exposure status'}
           </div>
           {audit.status === 'critical' ? (
             <div className="mt-2 grid grid-cols-2 gap-3">
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-slate-500">Taxable excess</div>
-                <div className="text-lg font-bold tabular text-rose-700">{fmtKva(audit.taxable)}</div>
+                <div className="text-lg font-bold tabular text-red-700">{fmtKva(audit.taxable)}</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-slate-500">Monthly exposure</div>
-                <div className="text-lg font-bold tabular text-rose-700">{fmtDT(audit.monthlyPenalty)}</div>
+                <div className="text-lg font-bold tabular text-red-700">{fmtDT(audit.monthlyPenalty)}</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-slate-500">Annual exposure*</div>
-                <div className="text-lg font-bold tabular text-rose-700">{fmtDT(audit.annualPenalty)}</div>
+                <div className="text-lg font-bold tabular text-red-700">{fmtDT(audit.annualPenalty)}</div>
               </div>
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-slate-500">Current prime (yr)</div>

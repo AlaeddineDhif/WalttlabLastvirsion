@@ -12,6 +12,7 @@ import {
   Legend
 } from 'chart.js';
 import { fmt } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler, Legend);
 ChartJS.defaults.font.family = "'JetBrains Mono', monospace";
@@ -37,7 +38,7 @@ const THEMES = {
     tooltipBorder: '#e2e8f0',
     tooltipTitle: '#0f172a',
     tooltipBody: '#334155',
-    grid: 'rgba(100,116,139,0.15)',
+    grid: 'rgba(100,116,139,0.12)',
     tick: '#94a3b8'
   },
   dark: {
@@ -60,13 +61,13 @@ export default function ComboChart({
   bars,
   barLabel,
   barUnit,
-  barRgb = '5,150,105',
-  barColor = '#059669',
+  barRgb = CHART_PRIMARY_RGB,
+  barColor = CHART_PRIMARY,
   barPalette = null,
   line,
   lineLabel,
   lineUnit,
-  lineColor = '#dc2626',
+  lineColor = CHART_PRIMARY,
   lineDecimals = 3,
   height = 'h-64',
   theme = 'light'
@@ -99,7 +100,8 @@ export default function ComboChart({
           borderWidth: 1,
           titleColor: palette.tooltipTitle,
           bodyColor: palette.tooltipBody,
-          padding: 10,
+          padding: 11,
+          cornerRadius: 10,
           boxPadding: 4,
           callbacks: {
             label: (ctx) =>
@@ -143,8 +145,9 @@ export default function ComboChart({
           backgroundColor: barPalette || gradientFor(barRgb),
           borderColor: barColor,
           borderWidth: 1.2,
-          borderRadius: 3,
-          maxBarThickness: 32,
+          borderRadius: 6,
+          borderSkipped: false,
+          maxBarThickness: 34,
           yAxisID: 'y'
         },
         {
@@ -153,10 +156,13 @@ export default function ComboChart({
           data: line,
           borderColor: lineColor,
           backgroundColor: lineColor,
-          borderWidth: 1.8,
-          tension: 0.3,
-          pointRadius: 2,
+          borderWidth: 2,
+          tension: 0.35,
+          pointRadius: 2.5,
           pointHoverRadius: 5,
+          pointBackgroundColor: lineColor,
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
           spanGaps: true,
           yAxisID: 'y1'
         }

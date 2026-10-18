@@ -12,6 +12,7 @@ import {
   Legend
 } from 'chart.js';
 import { fmt } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Tooltip, Filler, Legend);
 ChartJS.defaults.font.family = "'JetBrains Mono', monospace";
@@ -24,8 +25,8 @@ function gradientFor(rgb) {
     const { ctx, chartArea } = chart;
     if (!chartArea) return `rgba(${rgb},0.35)`;
     const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    grad.addColorStop(0, `rgba(${rgb},0.55)`);
-    grad.addColorStop(1, `rgba(${rgb},0.08)`);
+    grad.addColorStop(0, `rgba(${rgb},0.68)`);
+    grad.addColorStop(1, `rgba(${rgb},0.22)`);
     return grad;
   };
 }
@@ -36,7 +37,8 @@ const baseTooltip = {
   borderWidth: 1,
   titleColor: '#0f172a',
   bodyColor: '#334155',
-  padding: 10,
+  padding: 11,
+  cornerRadius: 10,
   boxPadding: 4
 };
 
@@ -49,8 +51,8 @@ export default function BarChart({
   labels,
   values,
   colors = null,
-  rgb = '2,132,199',
-  color = '#0284c7',
+  rgb = CHART_PRIMARY_RGB,
+  color = CHART_PRIMARY,
   unit = '',
   decimals = 0,
   threshold = null,
@@ -69,8 +71,9 @@ export default function BarChart({
       maxTicksLimit: 6,
       callback: (v) => fmt(v, 0)
     },
-    grid: { color: 'rgba(100,116,139,0.15)' },
-    title: { display: true, text: unit, font: { size: 9 }, color: '#94a3b8' }
+    grid: { color: 'rgba(100,116,139,0.12)', drawTicks: false },
+    border: { display: false },
+    title: { display: true, text: unit, font: { size: 9, weight: '600' }, color: '#94a3b8' }
   };
   const categoryAxis = {
     ticks: { maxRotation: 0, font: { size: 9 }, color: '#94a3b8' },
@@ -108,9 +111,11 @@ export default function BarChart({
         data: values,
         backgroundColor: colors || gradientFor(rgb),
         borderColor: colors || color,
-        borderWidth: 1.4,
-        borderRadius: 3,
-        maxBarThickness: 34,
+        borderWidth: 1.2,
+        borderRadius: 6,
+        borderSkipped: false,
+        maxBarThickness: 36,
+        hoverBackgroundColor: colors ? undefined : color,
         decimals,
         unit
       }

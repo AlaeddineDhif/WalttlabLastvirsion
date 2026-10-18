@@ -3,11 +3,13 @@ import { Cpu, Coins, Trophy, TrendingDown, Layers, Plus, CheckCircle2 } from 'lu
 import BarChart from '../components/BarChart';
 import ComboChart from '../components/ComboChart';
 import { SectionCard, StatTile, Bar, LoadingBlock } from '../components/StatTile';
+import PageHeader from '../components/PageHeader';
 import useCostReport from '../hooks/useCostReport';
 import useWorkload from '../hooks/useWorkload';
 import ProductionPanel from '../components/ProductionPanel';
 import { useTelemetry } from '../context/TelemetryContext';
 import { fmt, fmtDT, fmtKwh, fmtKwhUnit, fmtDTUnit } from '../lib/format';
+import { CHART_PRIMARY, BRAND_NAVY } from '../lib/brand';
 
 const WINDOWS = [
   { days: 30, label: '30 days' },
@@ -46,10 +48,14 @@ export default function ProductionCost() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="Production cost"
+        description={`Unit energy cost by department and workshop over the last ${r.windowDays} days`}
+      />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatTile
           icon={Cpu}
-          accent="#059669"
+          accent="#16A34A"
           label="Energy per piece"
           value={t.kwhPerUnit == null ? '--' : fmt(t.kwhPerUnit, 3)}
           sub="kWh / piece"
@@ -64,7 +70,7 @@ export default function ProductionCost() {
         />
         <StatTile
           icon={Layers}
-          accent="#2563eb"
+          accent={BRAND_NAVY}
           label="Pieces produced"
           value={fmt(t.units, 0)}
           sub={`in ${r.windowDays} days`}
@@ -78,7 +84,7 @@ export default function ProductionCost() {
         />
         <StatTile
           icon={Trophy}
-          accent="#059669"
+          accent="#16A34A"
           label="Best practice"
           value={r.mostEfficient ? fmt(r.mostEfficient.kwhPerUnit, 2) : '--'}
           sub={r.mostEfficient ? `kWh/pc · ${r.mostEfficient.name}` : 'kWh/pc'}
@@ -106,7 +112,7 @@ export default function ProductionCost() {
                 onClick={() => setDays(w.days)}
                 className={`rounded-md px-2.5 py-1 text-[10px] font-semibold tracking-wide transition ${
                   w.days === days
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-brand-600 text-white'
                     : 'border border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -124,7 +130,7 @@ export default function ProductionCost() {
             <select
               value={departmentId}
               onChange={(e) => onDepartment(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] font-medium text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] font-medium text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
             >
               <option value="">All departments</option>
               {departments.map((d) => (
@@ -143,7 +149,7 @@ export default function ProductionCost() {
               value={workshopId}
               onChange={(e) => setWorkshopId(e.target.value)}
               disabled={!departmentId}
-              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] font-medium text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[12px] font-medium text-slate-800 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
             >
               <option value="">{departmentId ? 'All workshops' : 'Select a department first'}</option>
               {workshops.map((w) => (
@@ -228,7 +234,7 @@ export default function ProductionCost() {
                           </div>
                           <div className="mt-1 flex justify-between font-mono text-[9px]">
                             <span className="text-slate-400">{fmt(w.dtPerUnit, 3)} DT/pc</span>
-                            <span className={w.vsAverage > 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                            <span className={w.vsAverage > 0 ? 'text-red-600' : 'text-energy-600'}>
                               {w.vsAverage > 0 ? '+' : ''}
                               {fmt(w.vsAverage * 100, 0)}% vs avg
                             </span>
@@ -258,12 +264,12 @@ export default function ProductionCost() {
               bars={r.byMonth.map((m) => m.energyKwh)}
               barLabel="Energy"
               barUnit="kWh"
-              barRgb="5,150,105"
-              barColor="#059669"
+              barRgb="22,163,74"
+              barColor="#16A34A"
               line={r.byMonth.map((m) => m.dtPerUnit)}
               lineLabel="Cost per piece"
               lineUnit="DT/pc"
-              lineColor="#d97706"
+              lineColor={CHART_PRIMARY}
               lineDecimals={3}
               height="h-64"
             />
@@ -337,14 +343,14 @@ export default function ProductionCost() {
                   <td className="py-2 pr-3 tabular text-slate-700">
                     {w.dtPerUnit == null ? <span className="text-slate-400">—</span> : fmt(w.dtPerUnit, 3)}
                   </td>
-                  <td className={`py-2 pr-3 tabular ${w.vsAverage > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <td className={`py-2 pr-3 tabular ${w.vsAverage > 0 ? 'text-red-600' : 'text-energy-600'}`}>
                     {w.vsAverage == null ? '—' : `${w.vsAverage > 0 ? '+' : ''}${fmt(w.vsAverage * 100, 0)}%`}
                   </td>
                   <td className="py-2 tabular">
                     {w.excessCost > 0 ? (
-                      <span className="font-bold text-rose-600">{fmtDT(w.excessCost, 0)}</span>
+                      <span className="font-bold text-red-600">{fmtDT(w.excessCost, 0)}</span>
                     ) : (
-                      <span className="text-emerald-600">on target</span>
+                      <span className="text-energy-600">on target</span>
                     )}
                   </td>
                 </tr>
@@ -362,7 +368,7 @@ export default function ProductionCost() {
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmtKwhUnit(t.kwhPerUnit)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmtDTUnit(t.dtPerUnit)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-500">—</td>
-                <td className="py-2 font-bold tabular text-rose-600">{fmtDT(r.outlierCost, 0)}</td>
+                <td className="py-2 font-bold tabular text-red-600">{fmtDT(r.outlierCost, 0)}</td>
               </tr>
             </tfoot>
           </table>
@@ -376,29 +382,29 @@ export default function ProductionCost() {
 
         <SectionCard title="Where the money goes" subtitle="Cost attribution" icon={CheckCircle2}>
           <div className="space-y-3">
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-700">Best practice</p>
+            <div className="rounded-lg border border-energy-200 bg-energy-50 p-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-energy-700">Best practice</p>
               {r.mostEfficient ? (
-                <p className="mt-1 text-[12px] font-semibold text-emerald-900">{r.mostEfficient.name}</p>
+                <p className="mt-1 text-[12px] font-semibold text-energy-900">{r.mostEfficient.name}</p>
               ) : (
                 <p className="mt-1 text-[12px] text-slate-500">—</p>
               )}
               {r.mostEfficient && (
-                <p className="mt-0.5 font-mono text-[10px] text-emerald-700">
+                <p className="mt-0.5 font-mono text-[10px] text-energy-700">
                   {fmt(r.mostEfficient.kwhPerUnit, 2)} kWh/pc · {fmt(r.mostEfficient.dtPerUnit, 3)} DT/pc
                 </p>
               )}
             </div>
 
-            <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-rose-700">Worst performer</p>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-red-700">Worst performer</p>
               {r.leastEfficient ? (
-                <p className="mt-1 text-[12px] font-semibold text-rose-900">{r.leastEfficient.name}</p>
+                <p className="mt-1 text-[12px] font-semibold text-red-900">{r.leastEfficient.name}</p>
               ) : (
                 <p className="mt-1 text-[12px] text-slate-500">—</p>
               )}
               {r.leastEfficient && (
-                <p className="mt-0.5 font-mono text-[10px] text-rose-700">
+                <p className="mt-0.5 font-mono text-[10px] text-red-700">
                   {fmt(r.leastEfficient.kwhPerUnit, 2)} kWh/pc · {fmtDT(r.leastEfficient.excessCost, 0)} above average
                 </p>
               )}
@@ -406,7 +412,7 @@ export default function ProductionCost() {
 
             <p className="text-[11px] leading-5 text-slate-500">
               Closing the gap between the worst and best workshop would save{' '}
-              <span className="font-bold text-emerald-700">{fmtDT(r.outlierCost, 0)}</span> over{' '}
+              <span className="font-bold text-energy-700">{fmtDT(r.outlierCost, 0)}</span> over{' '}
               {r.windowDays} days — the plant currently averages{' '}
               <span className="font-mono font-semibold text-slate-700">{fmt(t.kwhPerUnit, 3)} kWh/pc</span> against a
               best-practice floor of{' '}

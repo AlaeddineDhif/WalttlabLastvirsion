@@ -36,8 +36,10 @@ export default function TrendChart({ points, color, rgb, label, unit, decimals }
           borderWidth: 1,
           titleColor: '#0f172a',
           bodyColor: '#334155',
-          padding: 10,
+          padding: 11,
+          cornerRadius: 10,
           boxPadding: 4,
+          displayColors: false,
           callbacks: {
             label: (ctx) => ` ${fmt(ctx.parsed.y, decimals)} ${unit}`
           }
@@ -56,8 +58,9 @@ export default function TrendChart({ points, color, rgb, label, unit, decimals }
             maxTicksLimit: 5,
             callback: (v) => fmt(v, 0)
           },
-          grid: { color: 'rgba(100,116,139,0.15)' },
-          title: { display: true, text: unit, font: { size: 9 }, color }
+          grid: { color: 'rgba(100,116,139,0.12)', drawTicks: false },
+          border: { display: false },
+          title: { display: true, text: unit, font: { size: 9, weight: '600' }, color }
         }
       }
     }),
@@ -77,12 +80,13 @@ export default function TrendChart({ points, color, rgb, label, unit, decimals }
             const { ctx, chartArea } = chart;
             if (!chartArea) return `rgba(${rgb},0)`;
             const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-            grad.addColorStop(0, `rgba(${rgb},0.25)`);
+            grad.addColorStop(0, `rgba(${rgb},0.3)`);
+            grad.addColorStop(0.65, `rgba(${rgb},0.08)`);
             grad.addColorStop(1, `rgba(${rgb},0)`);
             return grad;
           },
-          borderWidth: 1.6,
-          tension: 0.3,
+          borderWidth: 2,
+          tension: 0.4,
           pointRadius: 0,
           pointHoverRadius: 4,
           pointHoverBackgroundColor: color,

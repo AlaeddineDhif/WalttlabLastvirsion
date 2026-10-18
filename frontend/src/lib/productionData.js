@@ -19,6 +19,7 @@
  */
 import { TOTAL_KWH as DISTRIBUTION_TOTAL_KWH } from './distributionData';
 import { seeded } from './seeded';
+import { BRAND_NAVY } from './brand';
 
 export const SIMULATED = true;
 export const SIMULATION_NOTE =
@@ -94,7 +95,7 @@ export const KPIS = [
     value: SEC_GLOBAL,
     unit: 'kWh/pc',
     sub: `moyenne ${PERIOD.days} jours`,
-    accent: '#059669',
+    accent: '#16A34A',
     primary: true
   },
   {
@@ -111,7 +112,7 @@ export const KPIS = [
     value: TOTAL_ENERGY,
     unit: 'kWh',
     sub: `${PERIOD.hours} h · même total que Distribution`,
-    accent: '#0d9488'
+    accent: BRAND_NAVY
   },
   {
     key: 'worstSec',

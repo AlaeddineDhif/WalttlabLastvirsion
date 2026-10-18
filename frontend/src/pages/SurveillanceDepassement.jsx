@@ -5,6 +5,7 @@ import { SectionCard, StatTile } from '../components/StatTile';
 import LineChart from '../components/LineChart';
 import { CHIP } from '../lib/tags';
 import { fmt, fmtDT, fmtKva, fmtPct } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 import {
   AVG_PEAK,
   CONTRACT,
@@ -39,7 +40,7 @@ export default function SurveillanceDepassement() {
         title="Surveillance du dépassement"
         subtitle={`Pointe appelée jour par jour comparée à la puissance souscrite Ps, ${PERIOD.label}. Tout point au-dessus de la ligne rouge est un dépassement : il alimente le registre repris par les Alertes.`}
         scope="kVA · %"
-        accent="#059669"
+        accent="#16A34A"
         status="Données simulées"
         statusClass={CHIP.amber}
       />
@@ -81,9 +82,9 @@ export default function SurveillanceDepassement() {
                     onClick={() => setLevel(g.key)}
                     aria-pressed={active}
                     title={`${g.points.length} points, ${g.hint}`}
-                    className={`rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                    className={`rounded-md border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                       active
-                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        ? 'border-brand-200 bg-brand-50 text-brand-700'
                         : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                     }`}
                   >
@@ -92,8 +93,8 @@ export default function SurveillanceDepassement() {
                 );
               })}
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-700">
-              <span aria-hidden="true" className="h-0.5 w-3 bg-rose-500"></span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-red-700">
+              <span aria-hidden="true" className="h-0.5 w-3 bg-red-500"></span>
               Ps {fmt(CONTRACT.ps, 1)} kVA
             </span>
           </div>
@@ -105,8 +106,8 @@ export default function SurveillanceDepassement() {
           label="Pointe appelée"
           unit={chart.unit}
           decimals={1}
-          color="#059669"
-          rgb="5,150,105"
+          color={CHART_PRIMARY}
+          rgb={CHART_PRIMARY_RGB}
           reference={chart.reference}
           referenceLabel={`Puissance souscrite Ps ${fmt(CONTRACT.ps, 1)} kVA`}
           referenceColor={chart.referenceColor}
@@ -118,7 +119,7 @@ export default function SurveillanceDepassement() {
 
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-slate-100 pt-3 font-mono text-[10px] text-slate-500">
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-rose-600"></span>
+            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-red-600"></span>
             Dépassement de Ps
           </span>
           <span>Moyenne des pointes : {fmtKva(AVG_PEAK)}</span>
@@ -168,7 +169,7 @@ export default function SurveillanceDepassement() {
         days that went over the line.
       */}
       <p className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[11px] leading-4 text-slate-600">
-        <TrendingUp className="mt-px h-3.5 w-3.5 shrink-0 text-emerald-600" />
+        <TrendingUp className="mt-px h-3.5 w-3.5 shrink-0 text-brand-600" />
         <span>
           Pointe maximale de l’année : {fmtKva(PEAK_DAY.peakKva)} le {PEAK_DAY.label} à{' '}
           {String(PEAK_DAY.hour).padStart(2, '0')}h00, soit {fmtPct(UTILISATION)} de Ps. Les{' '}

@@ -12,6 +12,7 @@
  * strip are all derived from them, so the donut and the bar chart can never
  * disagree about the same total.
  */
+import { BRAND_NAVY } from './brand';
 
 export const SIMULATED = true;
 export const SIMULATION_NOTE =
@@ -20,9 +21,9 @@ export const SIMULATION_NOTE =
 export const PERIOD = { label: 'Mars 2026', days: 31, hours: 744 };
 
 export const WORKSHOPS = [
-  { id: 'decoupe', label: 'Atelier Découpe', short: 'Découpe', color: '#059669', rgb: '5,150,105' },
+  { id: 'decoupe', label: 'Atelier Découpe', short: 'Découpe', color: '#16A34A', rgb: '22,163,74' },
   { id: 'assemblage', label: 'Atelier Assemblage', short: 'Assemblage', color: '#0f172a', rgb: '15,23,42' },
-  { id: 'injection', label: 'Atelier Injection', short: 'Injection', color: '#0d9488', rgb: '13,148,136' },
+  { id: 'injection', label: 'Atelier Injection', short: 'Injection', color: BRAND_NAVY, rgb: '2,56,103' },
   { id: 'finition', label: 'Atelier Finition', short: 'Finition', color: '#d97706', rgb: '217,119,6' },
   { id: 'auxiliaires', label: 'Auxiliaires & ventilation', short: 'Auxiliaires', color: '#64748b', rgb: '100,116,139' }
 ];
@@ -104,6 +105,6 @@ export const KPIS = [
     value: BY_WORKSHOP.length > 0 ? Math.round(TOTAL_KWH / BY_WORKSHOP.length) : 0,
     unit: 'kWh',
     sub: `${BY_WORKSHOP.length} ateliers · moyenne ${PERIOD.days} j`,
-    accent: '#059669'
+    accent: '#16A34A'
   }
 ];

@@ -5,15 +5,26 @@ import { fmt, fmtDT, fmtDate } from '../lib/format';
 
 function Tile({ icon: Icon, label, value, accent }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3.5">
-      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+    <div className="rounded-md border border-slate-200 bg-slate-50 p-3.5">
+      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
         <Icon className="h-3.5 w-3.5" /> {label}
       </div>
-      <div className={`mt-1 text-xl font-bold tabular ${accent || 'text-slate-900'}`}>{value}</div>
+      <div className={`mt-1 text-xl font-semibold tabular ${accent || 'text-slate-900'}`}>{value}</div>
     </div>
   );
 }
 
+const FIELD =
+  'w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20';
+
+/**
+ * Production & unit-energy-cost console.
+ *
+ * A batch snapshots the live meter as a baseline, then correlates the kWh
+ * consumed with the pieces produced when it completes. Manual records cover
+ * shifts the meter cannot see. Nothing here invents a number: an unmeasured
+ * quantity stays `--`.
+ */
 export default function ProductionPanel({ currentEnergy }) {
   const { data, busy, actionError, startBatch, completeBatch, addRecord } = useProduction();
 
@@ -26,7 +37,7 @@ export default function ProductionPanel({ currentEnergy }) {
 
   if (!data) {
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+      <section className="wl-card p-5">
         <p className="text-sm text-slate-500">Loading production telemetry…</p>
       </section>
     );
@@ -67,14 +78,14 @@ export default function ProductionPanel({ currentEnergy }) {
   };
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-card">
+    <section className="wl-card p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Factory className="h-4 w-4 text-slate-500" />
-          <h2 className="text-[13px] font-bold tracking-wide text-slate-900">Production &amp; Unit Energy Cost</h2>
+          <Factory className="h-4 w-4 text-slate-400" />
+          <h2 className="wl-section-title">Production &amp; unit energy cost</h2>
         </div>
-        <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[10px] text-slate-600">
-          Tariff energy: {fmtDT(energyRatePerKwh)}/kWh
+        <span className="font-mono text-[10px] text-slate-500">
+          tariff {fmtDT(energyRatePerKwh)}/kWh
         </span>
       </div>
 
@@ -86,20 +97,20 @@ export default function ProductionPanel({ currentEnergy }) {
           icon={Percent}
           label="Unit energy cost"
           value={summary.avgUnitCost != null ? fmtDT(summary.avgUnitCost) + ' /pièce' : '--'}
-          accent="text-emerald-700"
+          accent="text-brand-700"
         />
       </div>
 
       {actionError && (
-        <div className="mt-3 rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+        <div className="mt-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
           {actionError}
         </div>
       )}
 
       <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
         {!batch.active ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <div className="mb-2 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+          <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+            <div className="mb-2 text-[12px] font-semibold text-slate-700">
               Start a production batch
             </div>
             <p className="mb-3 text-xs leading-5 text-slate-500">
@@ -111,41 +122,41 @@ export default function ProductionPanel({ currentEnergy }) {
                 type="text"
                 value={batchLabel}
                 onChange={(e) => setBatchLabel(e.target.value)}
-                className="min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+                className={`min-w-0 flex-1 ${FIELD}`}
                 placeholder="Shift label (line, shift…)"
               />
               <button
                 onClick={onStart}
                 disabled={busy || !batchLabel.trim()}
-                className="flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-700 disabled:opacity-40"
               >
                 <Play className="h-3.5 w-3.5" /> Start batch
               </button>
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-slate-800 bg-slate-900 p-4 text-white">
-            <div className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-sky-300">
-              <span className="h-2 w-2 rounded-full bg-sky-400 pulse-dot" /> Batch in progress
+          <div className="rounded-md border border-brand-200 bg-brand-50 p-4">
+            <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold text-brand-700">
+              <span className="h-2 w-2 rounded-full bg-brand-500 pulse-dot" /> Batch in progress
             </div>
-            <div className="mb-3 text-sm font-semibold">{batch.label}</div>
+            <div className="mb-3 text-sm font-semibold text-slate-900">{batch.label}</div>
             <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-              <div className="rounded-md bg-slate-800 p-2">
+              <div className="rounded-md border border-slate-200 bg-white p-2">
                 <div className="text-[9px] uppercase tracking-wide text-slate-500">Baseline</div>
-                <div className="text-slate-100">{batch.startEnergy != null ? fmt(batch.startEnergy, 1) : '--'} kWh</div>
+                <div className="tabular text-slate-900">{batch.startEnergy != null ? fmt(batch.startEnergy, 1) : '--'} kWh</div>
               </div>
-              <div className="rounded-md bg-slate-800 p-2">
+              <div className="rounded-md border border-slate-200 bg-white p-2">
                 <div className="text-[9px] uppercase tracking-wide text-slate-500">Meter now</div>
-                <div className="text-slate-100">{meterNow != null ? fmt(meterNow, 1) : '--'} kWh</div>
+                <div className="tabular text-slate-900">{meterNow != null ? fmt(meterNow, 1) : '--'} kWh</div>
               </div>
-              <div className="rounded-md bg-slate-800 p-2">
+              <div className="rounded-md border border-slate-200 bg-white p-2">
                 <div className="text-[9px] uppercase tracking-wide text-slate-500">Consumed</div>
-                <div className="text-sky-300">{consumedNow != null ? fmt(consumedNow, 2) : '--'} kWh</div>
+                <div className="tabular font-semibold text-brand-700">{consumedNow != null ? fmt(consumedNow, 2) : '--'} kWh</div>
               </div>
             </div>
             <div className="mt-3 flex flex-wrap items-end gap-2">
               <label className="min-w-0 flex-1">
-                <span className="mb-1 block text-[9px] font-bold uppercase tracking-wide text-slate-400">
+                <span className="mb-1 block text-[11px] font-medium text-slate-600">
                   Units produced (pieces)
                 </span>
                 <input
@@ -154,13 +165,13 @@ export default function ProductionPanel({ currentEnergy }) {
                   value={units}
                   onChange={(e) => setUnits(e.target.value)}
                   placeholder="e.g. 420"
-                  className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white focus:border-sky-500 focus:outline-none"
+                  className={FIELD}
                 />
               </label>
               <button
                 onClick={onComplete}
                 disabled={busy || !Number(units) || Number(units) <= 0}
-                className="flex items-center gap-1.5 rounded-md bg-sky-500 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-sky-400 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-700 disabled:opacity-40"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" /> Complete &amp; compute
               </button>
@@ -168,8 +179,8 @@ export default function ProductionPanel({ currentEnergy }) {
           </div>
         )}
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
+        <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-700">
             <PlusCircle className="h-3.5 w-3.5" /> Log a manual record
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -177,7 +188,7 @@ export default function ProductionPanel({ currentEnergy }) {
               type="text"
               value={recLabel}
               onChange={(e) => setRecLabel(e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
+              className={FIELD}
               placeholder="Label / line"
             />
             <input
@@ -185,7 +196,7 @@ export default function ProductionPanel({ currentEnergy }) {
               min="1"
               value={recUnits}
               onChange={(e) => setRecUnits(e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none"
+              className={FIELD}
               placeholder="Units (pieces)"
             />
             <input
@@ -194,7 +205,7 @@ export default function ProductionPanel({ currentEnergy }) {
               step="any"
               value={recEnergy}
               onChange={(e) => setRecEnergy(e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-slate-500 focus:outline-none sm:col-span-2"
+              className={`sm:col-span-2 ${FIELD}`}
               placeholder="Consumed energy (kWh) — manual"
             />
           </div>
@@ -208,16 +219,16 @@ export default function ProductionPanel({ currentEnergy }) {
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-slate-200 bg-slate-50 font-mono text-[10px] uppercase tracking-wider text-slate-500">
+      <div className="mt-4 overflow-x-auto rounded-lg border border-slate-200">
+        <table className="wl-table min-w-[640px]">
+          <thead className="wl-thead bg-slate-50">
             <tr>
-              <th className="px-3 py-2 font-medium">Batch / Shift</th>
-              <th className="px-3 py-2 text-right font-medium">Units</th>
-              <th className="px-3 py-2 text-right font-medium">Energy kWh</th>
-              <th className="px-3 py-2 text-right font-medium">Cost DT</th>
-              <th className="px-3 py-2 text-right font-medium">Unit cost DT/pièce</th>
-              <th className="px-3 py-2 text-right font-medium">Completed</th>
+              <th className="wl-th">Batch / Shift</th>
+              <th className="wl-th text-right">Units</th>
+              <th className="wl-th text-right">Energy kWh</th>
+              <th className="wl-th text-right">Cost DT</th>
+              <th className="wl-th text-right">Unit cost DT/pièce</th>
+              <th className="wl-th text-right">Completed</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-mono">
@@ -234,7 +245,7 @@ export default function ProductionPanel({ currentEnergy }) {
                 <td className="px-3 py-2 text-right tabular text-slate-800">{fmt(r.units, 0)}</td>
                 <td className="px-3 py-2 text-right tabular text-slate-600">{fmt(r.energyKwh, 2)}</td>
                 <td className="px-3 py-2 text-right tabular text-slate-600">{fmtDT(r.cost)}</td>
-                <td className="px-3 py-2 text-right font-semibold tabular text-emerald-700">
+                <td className="px-3 py-2 text-right font-semibold tabular text-energy-700">
                   {r.unitCost != null ? fmtDT(r.unitCost) + ' /pièce' : '--'}
                 </td>
                 <td className="px-3 py-2 text-right text-slate-500">{fmtDate(r.completedAt)}</td>

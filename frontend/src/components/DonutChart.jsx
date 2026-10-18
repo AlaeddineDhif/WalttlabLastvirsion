@@ -14,7 +14,8 @@ const baseTooltip = {
   borderWidth: 1,
   titleColor: '#0f172a',
   bodyColor: '#334155',
-  padding: 10,
+  padding: 11,
+  cornerRadius: 10,
   boxPadding: 4
 };
 
@@ -66,8 +67,8 @@ export default function DonutChart({
           data: values,
           backgroundColor: colors,
           borderColor: '#ffffff',
-          borderWidth: 2,
-          hoverOffset: 6
+          borderWidth: 3,
+          hoverOffset: 8
         }
       ]
     }),
@@ -79,7 +80,7 @@ export default function DonutChart({
       <Doughnut data={data} options={options} />
       {centerValue != null && (
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="tabular text-[22px] font-extrabold leading-none text-slate-900">
+          <span className="tabular text-[22px] font-semibold leading-none text-slate-900">
             {centerValue}
           </span>
           {centerLabel && (

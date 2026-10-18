@@ -2,14 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+
+  /* Semantic brand tokens — sourced from the logo inks (see tailwind.config.js
+     and src/lib/brand.js). Components that cannot use a utility class read the
+     variable here instead of hardcoding a hex. */
+  --brand-primary: #023867;
+  --brand-primary-hover: #032d51;
+  --brand-primary-active: #04233e;
+  --brand-secondary: #79cbcd;
+  --brand-secondary-ink: #2d8c8f;
+  --brand-subtle: #f0f5fa;
+  --brand-border: #bedbf4;
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --text-strong: #0f172a;
+  --text-default: #334155;
+  --text-muted: #64748b;
+  --success: #16a34a;
+  --warning: #d97706;
+  --critical: #dc2626;
+  --info: #0559a3;
+  --focus-ring: rgba(2, 56, 103, 0.55);
+}
+
 html,
 body {
-  background: #f1f5f9;
+  background: var(--background);
+  color: var(--text-strong);
 }
+
+body {
+  min-height: 100vh;
+}
+
+/* ---------- Base refinements ---------- */
 
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+::selection {
+  background: rgba(2, 56, 103, 0.18);
+  color: var(--text-strong);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------- Shared surfaces ---------- */
+
+@layer components {
+  /* The one panel silhouette used across the platform: flat, bordered, tight. */
+  .wl-card {
+    @apply rounded-lg border border-slate-200 bg-white shadow-card;
+  }
+
+  .wl-card-hover {
+    transition: border-color 0.15s ease;
+  }
+  .wl-card-hover:hover {
+    @apply border-slate-300;
+  }
+
+  .wl-chip {
+    @apply inline-flex items-center gap-1.5 rounded border px-2 py-0.5 text-[10px] font-semibold tracking-wide;
+  }
+
+  /* Supporting labels — sentence case, restrained. */
+  .wl-kpi-label {
+    @apply text-[11px] font-medium text-slate-500;
+  }
+
+  .wl-section-title {
+    @apply text-[14px] font-semibold tracking-tight text-slate-900;
+  }
+
+  /* Page header standard — title, optional description, actions. */
+  .wl-page-head {
+    @apply flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-slate-200 pb-3.5;
+  }
+
+  .wl-label {
+    @apply mb-1.5 block text-[12px] font-medium text-slate-600;
+  }
+
+  .wl-field {
+    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400;
+  }
+
+  .wl-input {
+    @apply w-full rounded-md border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 transition hover:border-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
+  }
+
+  /* Button hierarchy: primary (blue), secondary (bordered), ghost (text). */
+  .wl-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-[13px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .wl-btn-primary {
+    @apply wl-btn bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .wl-btn-primary-block {
+    @apply wl-btn-primary w-full;
+  }
+
+  .wl-btn-secondary {
+    @apply wl-btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .wl-btn-danger {
+    @apply wl-btn bg-red-600 text-white hover:bg-red-700;
+  }
+
+  .wl-btn-ghost {
+    @apply wl-btn text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  /* Structured tables — left-aligned text, right-aligned numbers, tabular figures. */
+  .wl-table {
+    @apply w-full border-collapse text-left text-[13px];
+  }
+
+  .wl-thead {
+    @apply border-b border-slate-200 text-[11px] font-semibold text-slate-500;
+  }
+
+  .wl-th {
+    @apply px-3 py-2 font-semibold;
+  }
+
+  .wl-td {
+    @apply px-3 py-2 text-slate-700;
+  }
+}
+
+/* ---------- Status motion ---------- */
 
 .pulse-dot {
   animation: pulseDot 1.4s ease-in-out infinite;
@@ -20,18 +160,23 @@ body {
     opacity: 1;
   }
   50% {
-    opacity: 0.25;
+    opacity: 0.3;
   }
 }
 
-.blink-red {
-  animation: blinkRed 1s steps(2, start) infinite;
+/* ---------- Disclosure (advanced panels) ---------- */
+
+summary::-webkit-details-marker {
+  display: none;
 }
-@keyframes blinkRed {
-  to {
-    color: #b91c1c;
-  }
+.wl-chevron {
+  transition: transform 0.2s ease;
 }
+details[open] > summary .wl-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---------- Gauge ---------- */
 
 .gauge-arc {
   transition:
@@ -43,146 +188,59 @@ body {
   transition: transform 0.55s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.bg-grid {
-  background-image:
-    radial-gradient(ellipse 60% 40% at 20% 0%, rgba(30, 58, 138, 0.05), transparent),
-    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(30, 64, 175, 0.04), transparent),
-    repeating-linear-gradient(0deg, rgba(51, 65, 85, 0.025) 0 1px, transparent 1px 42px),
-    repeating-linear-gradient(90deg, rgba(51, 65, 85, 0.025) 0 1px, transparent 1px 42px);
-}
+/* ---------- Power factor penalty ---------- */
 
 .pf-penalty {
-  border-color: rgba(220, 38, 38, 0.4) !important;
-  background: rgba(254, 226, 226, 0.5) !important;
-  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.45) !important;
+  background: #fef2f2 !important;
 }
+
+/* ---------- Scrollbar ---------- */
 
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #e2e8f0;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #cbd5e1;
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #f1f5f9;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94a3b8;
 }
 
-.shadow-card {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.05),
-    0 1px 3px rgba(15, 23, 42, 0.06);
-}
-
-.sidebar-item-active {
-  background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent);
-}
+/* ---------- Page motion ---------- */
 
 .page-enter {
-  animation: pageEnter 0.22s ease-out;
+  animation: pageEnter 0.15s ease-out;
 }
 @keyframes pageEnter {
   from {
     opacity: 0;
-    transform: translateY(4px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
-/* ---- Login showcase ---- */
-
-.grid-drift {
-  background-image:
-    linear-gradient(rgba(100, 116, 139, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(100, 116, 139, 0.08) 1px, transparent 1px);
-  background-size: 46px 46px;
-  animation: gridDrift 24s linear infinite;
-}
-@keyframes gridDrift {
-  to {
-    background-position: 46px 46px;
-  }
+/* Skeleton loading — neutral shimmer, no tint. */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e9edf0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 0.375rem;
 }
 
-.title-gradient-light {
-  background-image: linear-gradient(
-    100deg,
-    #059669 0%,
-    #0d9488 28%,
-    #047857 55%,
-    #0d9488 78%,
-    #059669 100%
-  );
-  background-size: 220% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: titleGradient 9s linear infinite;
-}
-@keyframes titleGradient {
-  to {
-    background-position: 220% center;
-  }
-}
-
-.float-device {
-  animation: floatDevice 7s ease-in-out infinite;
-}
-@keyframes floatDevice {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-  50% {
-    transform: translate3d(0, -12px, 0) rotate(-0.6deg);
-  }
-}
-
-.device-tilt {
-  transition:
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.5s ease;
-  transform-style: preserve-3d;
-}
-.group:hover .device-tilt {
-  transform: perspective(1100px) rotateX(6deg) rotateY(-12deg) translateY(-6px);
-  box-shadow:
-    0 24px 48px -18px rgba(5, 150, 105, 0.35),
-    0 2px 6px rgba(15, 23, 42, 0.06);
-}
-
-.neon-pulse {
-  animation: neonPulse 3.4s ease-in-out infinite;
-}
-@keyframes neonPulse {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.08);
-  }
-}
-
-.sweep {
-  animation: sweep 4.5s ease-in-out infinite;
-}
-@keyframes sweep {
-  0% {
-    transform: translateX(-120%);
-  }
-  55%,
-  100% {
-    transform: translateX(220%);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

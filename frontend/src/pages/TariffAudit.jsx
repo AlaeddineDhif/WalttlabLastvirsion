@@ -10,9 +10,11 @@ import {
 import BarChart from '../components/BarChart';
 import ComboChart from '../components/ComboChart';
 import StegAuditPanel from '../components/StegAuditPanel';
+import PageHeader from '../components/PageHeader';
 import { SectionCard, StatTile, Bar, LoadingBlock } from '../components/StatTile';
 import useAuditHistory from '../hooks/useAuditHistory';
 import { fmt, fmtDT, fmtKwh, fmtPct } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 
 export default function TariffAudit() {
   const { data: h, loading } = useAuditHistory();
@@ -24,7 +26,7 @@ export default function TariffAudit() {
 
   const peakValues = h.months.map((m) => m.peakKva);
   const peakColors = h.months.map((m) =>
-    m.exceeded ? '#dc2626' : m.headroom < 10 ? '#d97706' : '#0284c7'
+    m.exceeded ? '#dc2626' : m.headroom < 10 ? '#d97706' : CHART_PRIMARY
   );
 
   const opt = h.optimization;
@@ -36,6 +38,10 @@ export default function TariffAudit() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="Tariff audit"
+        description={`${h.months.length}-month STEG track · subscribed power, monthly peaks and subscription optimisation`}
+      />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatTile
           icon={Gauge}
@@ -61,14 +67,14 @@ export default function TariffAudit() {
         />
         <StatTile
           icon={Wallet}
-          accent="#059669"
+          accent="#16A34A"
           label="Annual energy bill"
           value={fmt(h.totalCost, 0)}
           sub="DT · prime + energy + penalty"
         />
         <StatTile
           icon={CheckCircle2}
-          accent="#7c3aed"
+          accent={CHART_PRIMARY}
           label="Optimal Ps"
           value={fmt(best.power, 0)}
           sub={best.power === h.subscribedPower ? 'kVA · already optimal' : `kVA · saves ${fmt(saving, 0)} DT/yr`}
@@ -76,7 +82,7 @@ export default function TariffAudit() {
         />
         <StatTile
           icon={CalendarRange}
-          accent="#2563eb"
+          accent={CHART_PRIMARY}
           label="Annual consumption"
           value={fmt(h.totalEnergyKwh / 1000, 1)}
           sub={`MWh · ${fmt(h.units, 0)} pieces`}
@@ -92,13 +98,13 @@ export default function TariffAudit() {
           actions={
             <div className="flex flex-wrap items-center gap-3 font-mono text-[10px] text-slate-500">
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-sm bg-sky-600"></span> within Ps
+                <span className="h-2 w-2 rounded-sm bg-brand-600"></span> within Ps
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-sm bg-rose-600"></span> over Ps
+                <span className="h-2 w-2 rounded-sm bg-red-600"></span> over Ps
               </span>
               <span className="flex items-center gap-1">
-                <span className="h-0.5 w-4 bg-rose-500"></span> Ps
+                <span className="h-0.5 w-4 bg-red-500"></span> Ps
               </span>
             </div>
           }
@@ -116,7 +122,7 @@ export default function TariffAudit() {
           />
           <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-slate-100 pt-3 font-mono text-[10px] text-slate-500">
             <span>
-              Excess billed: <span className="font-bold text-rose-600">{fmtDT(h.annualPenalty, 0)}</span>
+              Excess billed: <span className="font-bold text-red-600">{fmtDT(h.annualPenalty, 0)}</span>
             </span>
             <span>
               Subscription prime: <span className="font-bold text-slate-700">{fmtDT(h.annualPrime, 0)}</span>
@@ -147,7 +153,7 @@ export default function TariffAudit() {
                   key={row.power}
                   className={`rounded-lg border p-2.5 transition ${
                     isBest
-                      ? 'border-emerald-300 bg-emerald-50'
+                      ? 'border-energy-300 bg-energy-50'
                       : isCurrent
                         ? 'border-slate-900 bg-slate-50'
                         : 'border-slate-200 bg-white'
@@ -163,7 +169,7 @@ export default function TariffAudit() {
                   </div>
                   <div className="mt-1 flex items-center justify-between font-mono text-[9px] text-slate-500">
                     <span>prime {fmtDT(row.annualPrime, 0)}</span>
-                    <span className={row.annualPenalty > 0 ? 'font-semibold text-rose-600' : 'text-emerald-600'}>
+                    <span className={row.annualPenalty > 0 ? 'font-semibold text-red-600' : 'text-energy-600'}>
                       {row.annualPenalty > 0 ? `penalty ${fmtDT(row.annualPenalty, 0)}` : 'no penalty'}
                     </span>
                   </div>
@@ -171,7 +177,7 @@ export default function TariffAudit() {
                     <Bar
                       value={row.annualTotal}
                       max={maxRowCost}
-                      color={isBest ? '#059669' : isCurrent ? '#0f172a' : '#94a3b8'}
+                      color={isBest ? '#16A34A' : isCurrent ? '#0f172a' : '#94a3b8'}
                     />
                   </div>
                   {isCurrent && (
@@ -180,7 +186,7 @@ export default function TariffAudit() {
                     </p>
                   )}
                   {isBest && !isCurrent && (
-                    <p className="mt-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
+                    <p className="mt-1.5 text-[9px] font-bold uppercase tracking-wider text-energy-700">
                       ● recommended
                     </p>
                   )}
@@ -200,7 +206,7 @@ export default function TariffAudit() {
               ) : (
                 <>
                   Move to <span className="font-bold">{fmt(best.power, 0)} kVA</span> to save{' '}
-                  <span className="font-bold text-emerald-700">{fmt(saving, 0)} DT/year</span>
+                  <span className="font-bold text-energy-700">{fmt(saving, 0)} DT/year</span>
                   {penaltyFree && penaltyFree.power !== best.power && (
                     <>
                       {' '}at the price of a {fmt(penaltyFree.headroom, 0)} kVA margin. A penalty-free subscription needs{' '}
@@ -234,12 +240,12 @@ export default function TariffAudit() {
             bars={h.months.map((m) => m.energyKwh)}
             barLabel="Energy"
             barUnit="kWh"
-            barRgb="217,119,6"
-            barColor="#d97706"
+            barRgb="22,163,74"
+            barColor="#16A34A"
             line={h.months.map((m) => m.cost)}
             lineLabel="Bill"
             lineUnit="DT"
-            lineColor="#0f172a"
+            lineColor={CHART_PRIMARY}
             lineDecimals={0}
             height="h-64"
           />
@@ -255,8 +261,8 @@ export default function TariffAudit() {
             bars={h.months.map((m) => m.averageKva)}
             barLabel="Average demand"
             barUnit="kVA"
-            barRgb="37,99,235"
-            barColor="#2563eb"
+            barRgb={CHART_PRIMARY_RGB}
+            barColor={CHART_PRIMARY}
             line={h.months.map((m) => m.peakKva)}
             lineLabel="Monthly peak"
             lineUnit="kVA"
@@ -295,7 +301,7 @@ export default function TariffAudit() {
                 <tr
                   key={m.key}
                   className={`border-b border-slate-100 transition hover:bg-slate-50 ${
-                    m.exceeded ? 'bg-rose-50/40' : ''
+                    m.exceeded ? 'bg-red-50/40' : ''
                   }`}
                 >
                   <td className="py-2 pr-3 font-bold text-slate-800">
@@ -307,7 +313,7 @@ export default function TariffAudit() {
                   <td className="py-2 pr-3 font-semibold tabular text-slate-800">{fmt(m.peakKva, 1)}</td>
                   <td
                     className={`py-2 pr-3 tabular ${
-                      m.exceeded ? 'text-rose-600' : m.headroom < 10 ? 'text-amber-600' : 'text-slate-600'
+                      m.exceeded ? 'text-red-600' : m.headroom < 10 ? 'text-amber-600' : 'text-slate-600'
                     }`}
                   >
                     {m.exceeded ? `+${fmt(-m.headroom, 1)}` : fmt(m.headroom, 1)}
@@ -319,7 +325,7 @@ export default function TariffAudit() {
                   <td className="py-2 pr-3 tabular text-slate-600">{fmtDT(m.monthlyPrime, 0)}</td>
                   <td className="py-2 pr-3 tabular">
                     {m.monthlyPenalty > 0 ? (
-                      <span className="font-bold text-rose-600">{fmtDT(m.monthlyPenalty, 0)}</span>
+                      <span className="font-bold text-red-600">{fmtDT(m.monthlyPenalty, 0)}</span>
                     ) : (
                       <span className="text-slate-400">—</span>
                     )}
@@ -333,14 +339,14 @@ export default function TariffAudit() {
                 <td className="py-2 pr-3 font-bold text-slate-900">{h.months.length} months</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-900">{fmtKwh(h.totalEnergyKwh, 0)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-500">—</td>
-                <td className="py-2 pr-3 font-bold tabular text-rose-600">{fmt(h.peakKva, 1)}</td>
+                <td className="py-2 pr-3 font-bold tabular text-red-600">{fmt(h.peakKva, 1)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-500">—</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-500">—</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmt(h.units, 0)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmt(h.kwhPerUnit, 3)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmt(h.dtPerUnit, 3)}</td>
                 <td className="py-2 pr-3 font-bold tabular text-slate-800">{fmtDT(h.annualPrime, 0)}</td>
-                <td className="py-2 pr-3 font-bold tabular text-rose-600">{fmtDT(h.annualPenalty, 0)}</td>
+                <td className="py-2 pr-3 font-bold tabular text-red-600">{fmtDT(h.annualPenalty, 0)}</td>
                 <td className="py-2 font-bold tabular text-slate-900">{fmtDT(h.totalCost, 0)}</td>
               </tr>
             </tfoot>

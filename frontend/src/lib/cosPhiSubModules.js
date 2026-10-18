@@ -12,9 +12,9 @@ export const COSPHI_SUB_MODULES = [
     short: 'Dépassement',
     description: 'Cos φ minimal atteint et franchissements de seuil',
     icon: TrendingUp,
-    accent: '#059669',
-    surface: 'border-emerald-200 bg-emerald-50',
-    ink: 'text-emerald-700',
+    accent: '#16A34A',
+    surface: 'border-energy-200 bg-energy-50',
+    ink: 'text-energy-700',
     subtitle:
       'Évolution du facteur de puissance jusqu’à sa valeur minimale, avec les franchissements de seuil, la durée cumulée hors consigne et l’énergie réactive correspondante.',
     scope: 'cos φ · durée'

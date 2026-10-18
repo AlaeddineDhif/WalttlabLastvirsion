@@ -42,14 +42,14 @@ export default function AlertesDepassement() {
           label="Alertes déclenchées"
           value={fmt(total, 0)}
           sub={`jours au-dessus de Ps · ${PERIOD.days} jours simulés`}
-          accent={total > 0 ? '#b45309' : '#059669'}
+          accent={total > 0 ? '#b45309' : '#16A34A'}
         />
         <StatTile
           icon={TriangleAlert}
           label="Alertes critiques"
           value={fmt(critical, 0)}
           sub={`au-delà de Ps + ${fmtKva(TOLERANCE_KVA)} de tolérance`}
-          accent={critical > 0 ? '#dc2626' : '#059669'}
+          accent={critical > 0 ? '#dc2626' : '#16A34A'}
           tone={critical > 0 ? 'critical' : 'good'}
         />
         <StatTile
@@ -66,8 +66,8 @@ export default function AlertesDepassement() {
         subtitle={`${total} alerte${total > 1 ? 's' : ''} enregistrée${total > 1 ? 's' : ''} · dérivée de la pointe appelée, jamais déclarée à la main`}
         icon={Siren}
         actions={
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-700">
-            <span aria-hidden="true" className="h-0.5 w-3 bg-rose-500"></span>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-red-700">
+            <span aria-hidden="true" className="h-0.5 w-3 bg-red-500"></span>
             Ps {fmt(CONTRACT.ps, 1)} kVA · tolérance {fmtKva(TOLERANCE_KVA)}
           </span>
         }

@@ -6,6 +6,7 @@ import AppShell from './components/AppShell';
 import ErrorBoundary from './components/ErrorBoundary';
 import { TelemetryProvider } from './context/TelemetryContext';
 import Consommation from './pages/Consommation';
+import BillingCost from './pages/BillingCost';
 import LiveMonitoring from './pages/LiveMonitoring';
 import ShiftEnergyCorrelation from './pages/ShiftEnergyCorrelation';
 import AnalyticsConsommation from './pages/AnalyticsConsommation';
@@ -18,6 +19,7 @@ import { getDefaultView } from './lib/nav';
 
 const PAGES = {
   consommation: Consommation,
+  billing: BillingCost,
   live: LiveMonitoring,
   'shift-correlation': ShiftEnergyCorrelation,
   'analytics-consommation': AnalyticsConsommation,
@@ -65,7 +67,7 @@ export default function App() {
         {/* A crash in one module stays inside `main`; the shell keeps rendering
             and `resetKey` clears the error as soon as the user navigates. */}
         <ErrorBoundary resetKey={`${mode}:${view}`}>
-          <Page />
+          <Page user={user} />
         </ErrorBoundary>
       </AppShell>
     </TelemetryProvider>

@@ -5,6 +5,7 @@ import { SectionCard, StatTile } from '../components/StatTile';
 import LineChart from '../components/LineChart';
 import { CHIP } from '../lib/tags';
 import { fmt, fmtPct, fmtTnd, fmtTndUnit } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 import {
   BEST,
   DEFAULT_GRANULARITY,
@@ -34,7 +35,7 @@ export default function RatioCout() {
         title="Ratio coût"
         subtitle={`Coût de l’énergie rapporté à la production, ${PERIOD.label}. Chaque point = coût énergétique de la période ÷ quantité produite : au-dessus de la moyenne, la période coûte cher à fabriquer.`}
         scope="TND · TND/pc"
-        accent="#0d9488"
+        accent={CHART_PRIMARY}
         status="Données simulées"
         statusClass={CHIP.amber}
       />
@@ -75,9 +76,9 @@ export default function RatioCout() {
                     onClick={() => setLevel(g.key)}
                     aria-pressed={active}
                     title={`${g.points.length} points, ${g.hint}`}
-                    className={`rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                    className={`rounded-md border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                       active
-                        ? 'border-teal-200 bg-teal-50 text-teal-700'
+                        ? 'border-brand-200 bg-brand-50 text-brand-700'
                         : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                     }`}
                   >
@@ -98,8 +99,8 @@ export default function RatioCout() {
           label="Coût par unité"
           unit="TND/pc"
           decimals={3}
-          color="#0d9488"
-          rgb="13,148,136"
+          color={CHART_PRIMARY}
+          rgb={CHART_PRIMARY_RGB}
           reference={UNIT_COST}
           referenceLabel="Moyenne du mois"
           height="h-72"

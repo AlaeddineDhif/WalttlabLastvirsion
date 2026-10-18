@@ -12,10 +12,10 @@ import { BREACH_EVENTS, CONTRACT, PERIOD } from '../lib/cosPhiData';
  */
 const SEVERITY = {
   critical: {
-    card: 'border-rose-200 bg-rose-50/70',
-    chip: 'border-rose-200 bg-rose-50 text-rose-700',
+    card: 'border-red-200 bg-red-50/70',
+    chip: 'border-red-200 bg-red-50 text-red-700',
     label: 'Réactif facturable',
-    dot: 'bg-rose-600'
+    dot: 'bg-red-600'
   },
   warning: {
     card: 'border-amber-200 bg-amber-50/70',
@@ -28,7 +28,7 @@ const SEVERITY = {
 export default function CosPhiAlertList({ events = BREACH_EVENTS }) {
   if (events.length === 0) {
     return (
-      <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-4 text-center text-[11px] text-emerald-800">
+      <p className="rounded-lg border border-energy-200 bg-energy-50 px-3 py-4 text-center text-[11px] text-energy-800">
         Aucun cos φ sous {fmt(CONTRACT.threshold, 2)} sur {PERIOD.days} jours simulés — le facteur de
         puissance est resté dans la bande gratuite du contrat.
       </p>

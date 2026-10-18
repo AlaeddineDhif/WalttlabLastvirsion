@@ -3,7 +3,6 @@ import Sidebar, { SidebarSpacer } from './Sidebar';
 import Header from './Header';
 import FeedBanner, { hasFeedNotice } from './FeedBanner';
 import PenaltyBanner from './PenaltyBanner';
-import { findNav, getDefaultView } from '../lib/nav';
 import { useTelemetry } from '../context/TelemetryContext';
 
 export default function AppShell({
@@ -25,8 +24,6 @@ export default function AppShell({
     }
   });
 
-  const page = findNav(view, mode) || findNav(getDefaultView(mode), mode);
-
   useEffect(() => {
     setDrawer(false);
   }, [view]);
@@ -40,7 +37,7 @@ export default function AppShell({
   }, [collapsed]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-canvas">
       <Sidebar
         view={view}
         onNavigate={onNavigate}
@@ -57,7 +54,6 @@ export default function AppShell({
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header
-          page={page}
           broker={broker}
           demo={demo}
           clock={clock}
@@ -69,7 +65,7 @@ export default function AppShell({
           onModeChange={onModeChange}
         />
 
-        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6">
+        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-7">
           {/* The offline state is a live-mode concern: analytics mode reads a
               historical dataset and never depends on the device. */}
           {mode === 'live' && hasFeedNotice(feed) && (
@@ -87,11 +83,16 @@ export default function AppShell({
               />
             </div>
           )}
-          {children}
+          <div className="page-enter">{children}</div>
         </main>
 
-        <footer className="border-t border-slate-200 px-4 py-3 text-[10px] text-slate-400 sm:px-6">
-          WattLab EMS — Tunisian industrial energy management · telemetry via MQTT, billing via STEG tariff model
+        <footer className="mt-auto border-t border-slate-200 px-4 py-3.5 text-[10px] tracking-wide text-slate-400 sm:px-6 lg:px-7">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="font-medium text-slate-500">
+              WatLab — Energy Management System
+            </span>
+            <span className="font-mono">telemetry via MQTT · billing via STEG tariff model</span>
+          </div>
         </footer>
       </div>
     </div>

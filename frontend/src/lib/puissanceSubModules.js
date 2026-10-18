@@ -12,9 +12,9 @@ export const PUISSANCE_SUB_MODULES = [
     short: 'Dépassement',
     description: 'Pointe appelée comparée à la puissance souscrite Ps',
     icon: Siren,
-    accent: '#059669',
-    surface: 'border-emerald-200 bg-emerald-50',
-    ink: 'text-emerald-700',
+    accent: '#16A34A',
+    surface: 'border-energy-200 bg-energy-50',
+    ink: 'text-energy-700',
     subtitle:
       'Écart entre la pointe appelée et la puissance souscrite Ps, avec le dépassement instantané, la prime STEG associée et l’heure de pointe responsable.',
     scope: 'kVA · %'

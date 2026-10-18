@@ -1,4 +1,5 @@
 import { Coins, Network, Split } from 'lucide-react';
+import { BRAND_NAVY } from './brand';
 
 /**
  * Ordered sub-sections of the Consommation module. This registry is the single
@@ -12,9 +13,9 @@ export const CONSO_SUB_MODULES = [
     short: 'Distribution',
     description: 'Répartition de l’énergie par atelier et par poste',
     icon: Network,
-    accent: '#059669',
-    surface: 'border-emerald-200 bg-emerald-50',
-    ink: 'text-emerald-700',
+    accent: '#16A34A',
+    surface: 'border-energy-200 bg-energy-50',
+    ink: 'text-energy-700',
     subtitle:
       'Répartition de l’énergie entre les ateliers et les postes de consommation, avec le poids de chaque appel de puissance.',
     scope: 'kWh · %'
@@ -38,9 +39,9 @@ export const CONSO_SUB_MODULES = [
     short: 'Ratio coût',
     description: 'Coût de l’énergie par unité produite',
     icon: Coins,
-    accent: '#0d9488',
-    surface: 'border-teal-200 bg-teal-50',
-    ink: 'text-teal-700',
+    accent: BRAND_NAVY,
+    surface: 'border-brand-200 bg-brand-50',
+    ink: 'text-brand-700',
     subtitle:
       'Coût de l’énergie rapporté à la production, selon le tarif STEG appliqué, pour suivre le coût unitaire dans le temps.',
     scope: 'TND · TND/pc'

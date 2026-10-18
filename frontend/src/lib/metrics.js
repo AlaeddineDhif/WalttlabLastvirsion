@@ -1,5 +1,6 @@
 import { Zap, Activity, Bolt, Database, Waves, Gauge } from 'lucide-react';
 import { fmt } from './format';
+import { BRAND_NAVY } from './brand';
 
 const COS_PHI_ZONES = [
   { from: 0, to: 0.85, color: 'rgba(220,38,38,0.3)' },
@@ -82,8 +83,8 @@ export const METRICS = [
     key: 'frequency',
     title: 'Frequency',
     icon: Waves,
-    color: '#2563eb',
-    rgb: '37,99,235',
+    color: BRAND_NAVY,
+    rgb: '2,56,103',
     unit: 'Hz',
     decimals: 2,
     chartDecimals: 2,

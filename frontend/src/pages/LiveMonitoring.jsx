@@ -4,10 +4,12 @@ import MetricCard from '../components/MetricCard';
 import TrendChart from '../components/TrendChart';
 import TelemetryLog from '../components/TelemetryLog';
 import ComboChart from '../components/ComboChart';
+import PageHeader from '../components/PageHeader';
 import { SectionCard, Bar } from '../components/StatTile';
 import { METRICS } from '../lib/metrics';
 import { useTelemetry } from '../context/TelemetryContext';
 import { fmt, fmtKwh } from '../lib/format';
+import { CHART_PRIMARY } from '../lib/brand';
 
 const TABS = [
   { id: 'voltage', label: 'Voltage' },
@@ -32,6 +34,10 @@ export default function LiveMonitoring() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="Live monitoring"
+        description="Electrical measurement stream — voltage, current, power, frequency and power factor"
+      />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {METRICS.map((m) => (
           <MetricCard
@@ -63,7 +69,7 @@ export default function LiveMonitoring() {
                   onClick={() => setTab(t.id)}
                   className={`rounded-md px-2.5 py-1 text-[10px] font-semibold tracking-wide transition ${
                     t.id === tab
-                      ? 'bg-slate-900 text-white'
+                      ? 'bg-brand-600 text-white'
                       : 'border border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
                   }`}
                 >
@@ -153,12 +159,12 @@ export default function LiveMonitoring() {
               bars={charts.energy.slice(-24).map((p) => p.v)}
               barLabel="Cumulative energy"
               barUnit="kWh"
-              barRgb="79,70,229"
-              barColor="#4f46e5"
+              barRgb="22,163,74"
+              barColor="#16A34A"
               line={charts.power.slice(-24).map((p) => p.v)}
               lineLabel="Active power"
               lineUnit="kW"
-              lineColor="#0284c7"
+              lineColor={CHART_PRIMARY}
               lineDecimals={2}
               height="h-64"
             />

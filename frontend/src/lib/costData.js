@@ -13,6 +13,7 @@
  * that produced 2400, and quietly answer a different question.
  */
 import { PERIOD, SERIES, TOTAL_ENERGY, TOTAL_PRODUCTION } from './productionData';
+import { BRAND_NAVY } from './brand';
 
 export const SIMULATED = true;
 export const SIMULATION_NOTE =
@@ -133,7 +134,7 @@ export const KPIS = [
     unit: 'TND',
     decimals: 2,
     sub: `${rateLabel()} · ${PERIOD.hours} h`,
-    accent: '#0d9488'
+    accent: BRAND_NAVY
   },
   {
     key: 'unitCost',
@@ -142,7 +143,7 @@ export const KPIS = [
     unit: 'TND/pc',
     decimals: 3,
     sub: `moyenne ${DAILY.length} jours`,
-    accent: '#059669',
+    accent: '#16A34A',
     primary: true
   }
 ];

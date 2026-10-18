@@ -1,14 +1,6 @@
-import { Menu, Timer, PlugZap, Bolt, Gauge } from 'lucide-react';
+import { Menu, Timer, PlugZap, Gauge } from 'lucide-react';
 import ModeSwitcher from './ModeSwitcher';
-import { clockNow, fmt, formatTime } from '../lib/format';
-
-const STATUS = {
-  connected: { cls: 'border-emerald-300 bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500', label: 'Connected' },
-  connecting: { cls: 'border-amber-300 bg-amber-50 text-amber-700', dot: 'bg-amber-500', label: 'Connecting' },
-  reconnecting: { cls: 'border-amber-300 bg-amber-50 text-amber-700', dot: 'bg-amber-500', label: 'Reconnecting' },
-  offline: { cls: 'border-slate-300 bg-slate-100 text-slate-500', dot: 'bg-slate-400', label: 'Offline' },
-  error: { cls: 'border-rose-300 bg-rose-50 text-rose-700', dot: 'bg-rose-500', label: 'Error' }
-};
+import { clockNow, fmt } from '../lib/format';
 
 /**
  * The pill reports the data feed, not the transport. A broker can hold a healthy
@@ -16,99 +8,82 @@ const STATUS = {
  * beside frozen gauges would be a lie.
  */
 const FEED_STATUS = {
-  live: { cls: 'border-emerald-300 bg-emerald-50 text-emerald-700', dot: 'bg-emerald-500', label: 'Live' },
-  simulated: { cls: 'border-sky-300 bg-sky-50 text-sky-700', dot: 'bg-sky-500', label: 'Simulated' },
+  live: { cls: 'border-energy-200 bg-energy-50 text-energy-700', dot: 'bg-energy-500', label: 'Live' },
+  simulated: { cls: 'border-brand-200 bg-brand-50 text-brand-700', dot: 'bg-brand-500', label: 'Simulated' },
   waiting: { cls: 'border-amber-300 bg-amber-50 text-amber-700', dot: 'bg-amber-500', label: 'Waiting' },
-  stale: { cls: 'border-rose-300 bg-rose-50 text-rose-700', dot: 'bg-rose-500', label: 'No data' },
-  disconnected: { cls: 'border-rose-300 bg-rose-50 text-rose-700', dot: 'bg-rose-500', label: 'Server down' }
+  stale: { cls: 'border-red-200 bg-red-50 text-red-700', dot: 'bg-red-500', label: 'No data' },
+  disconnected: { cls: 'border-red-200 bg-red-50 text-red-700', dot: 'bg-red-500', label: 'Server down' }
 };
 
-export default function Header({
-  page,
-  broker,
-  demo,
-  clock,
-  metrics,
-  feed,
-  onToggleDemo,
-  onOpenSidebar,
-  mode,
-  onModeChange
-}) {
-  const brokerState = STATUS[broker.state] || STATUS.connecting;
-  const s = FEED_STATUS[feed?.status] || brokerState;
+function Readout({ icon: Icon, children, title }) {
+  return (
+    <span
+      title={title}
+      className="hidden items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-[11px] text-slate-600 tabular lg:flex"
+    >
+      {Icon && <Icon className="h-3.5 w-3.5 text-slate-400" />}
+      {children}
+    </span>
+  );
+}
+
+/**
+ * Global application toolbar. Orientation, feed state and global controls live
+ * here; the page's own title and actions belong to each page's header, so a
+ * title is never printed twice.
+ */
+export default function Header({ broker, demo, clock, metrics, feed, onToggleDemo, onOpenSidebar, mode, onModeChange }) {
+  const s = FEED_STATUS[feed?.status] || FEED_STATUS.waiting;
   const simActive = demo || feed?.isSimulated;
   const pf = metrics.cosPhi == null ? null : Math.abs(metrics.cosPhi);
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3">
+    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
           <button
             onClick={onOpenSidebar}
-            className="rounded-lg border border-slate-300 bg-white p-2 text-slate-600 transition hover:bg-slate-50 lg:hidden"
+            aria-label="Open navigation"
+            className="rounded-md border border-slate-200 bg-white p-2 text-slate-600 transition hover:border-slate-300 hover:text-slate-900 lg:hidden"
           >
             <Menu className="h-4 w-4" />
           </button>
-          <span
-            className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:flex"
-            style={{ background: `${page.accent}14` }}
-          >
-            <page.icon className="h-4 w-4" style={{ color: page.accent }} />
-          </span>
-          <div className="min-w-0 leading-tight">
-            <h2 className="truncate text-[15px] font-extrabold tracking-tight text-slate-900">{page.label}</h2>
-            <p className="truncate text-[10px] font-medium tracking-wide text-slate-500">{page.description}</p>
-          </div>
+
+          <Readout icon={PlugZap} title="Active power">
+            {metrics.power == null ? '--' : fmt(metrics.power / 1000, 1)} kW
+          </Readout>
+          <Readout icon={Gauge} title="Power factor">
+            cos φ {pf == null ? '--' : fmt(pf, 2)}
+          </Readout>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <ModeSwitcher mode={mode} onModeChange={onModeChange} />
 
-          <span className="hidden h-6 w-px bg-slate-200 sm:block"></span>
+          <span className="hidden h-5 w-px bg-slate-200 sm:block"></span>
 
-          <div
-            className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 tracking-wide ${s.cls}`}
-            title={`Broker: ${brokerState.label}${feed?.ageSec != null ? ` · last packet ${feed.ageSec}s ago` : ''}`}
+          <span
+            className={`flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide ${s.cls}`}
+            title={`Broker: ${broker.state}${feed?.ageSec != null ? ` · last packet ${feed.ageSec}s ago` : ''}`}
           >
-            <span className={`h-2 w-2 rounded-full ${s.dot} pulse-dot`}></span>
+            <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`}></span>
             <span>{s.label}</span>
-          </div>
+          </span>
 
-          <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-500 lg:flex">
-            <Bolt className="h-3.5 w-3.5 text-slate-400" />
-            <span className="tabular">{metrics.power == null ? '--' : fmt(metrics.power / 1000, 1)} kW</span>
-          </div>
-
-          <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-500 md:flex">
-            <Gauge className="h-3.5 w-3.5 text-slate-400" />
-            <span className="tabular">cos φ {pf == null ? '--' : fmt(pf, 2)}</span>
-          </div>
-
-          <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-500 md:flex">
-            <PlugZap className="h-3.5 w-3.5 text-slate-400" />
-            <span className="tabular">{fmt(broker.messageCount || 0, 0)} msg</span>
-          </div>
-
-          <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-500 xl:flex">
-            <Timer className="h-3.5 w-3.5 text-slate-400" />
-            <span className="tabular">{formatTime(broker.lastMessageAt)}</span>
-          </div>
-
-          <div className="hidden items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-500 sm:flex">
-            <span className="tabular">{clockNow(clock)}</span>
-          </div>
+          <Readout icon={Timer} title="Server clock">
+            {clockNow(clock)}
+          </Readout>
 
           <button
             onClick={onToggleDemo}
             title="Toggle the virtual-plant generator on the server"
-            className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold tracking-wide transition ${
+            className={`hidden items-center gap-2 rounded-md border px-2.5 py-1 text-[11px] font-medium transition sm:flex ${
               simActive
-                ? 'border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100'
-                : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
+                ? 'border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
             }`}
           >
-            <span className={`h-2 w-2 rounded-full pulse-dot ${simActive ? 'bg-sky-500' : 'bg-slate-400'}`}></span>
+            <span className={`h-1.5 w-1.5 rounded-full ${simActive ? 'bg-brand-500' : 'bg-slate-400'}`}></span>
             {simActive ? 'Demo feed' : 'Live MQTT'}
           </button>
         </div>

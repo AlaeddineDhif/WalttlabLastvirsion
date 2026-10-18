@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Sun, Sunset, MoonStar, Package, Database, Wallet, Gauge, GitCompareArrows } from 'lucide-react';
 import ComboChart from '../components/ComboChart';
+import PageHeader from '../components/PageHeader';
 import { SectionCard, StatTile } from '../components/StatTile';
 import { useTelemetry } from '../context/TelemetryContext';
 import { fmt, clockNow } from '../lib/format';
+import { CHART_PRIMARY, BRAND_NAVY_STRONG as CHART_PRIMARY_STRONG, CHART_PRIMARY_RGB } from '../lib/brand';
 
 const ENERGY_RATE = 0.25;
 
@@ -13,9 +15,9 @@ const SHIFTS = [
     label: 'Poste Matin',
     short: 'Matin',
     slot: '06:00 – 14:00',
-    accent: '#10b981',
-    ink: '#047857',
-    rgb: '16,185,129',
+    accent: '#16A34A',
+    ink: '#15803D',
+    rgb: '22,163,74',
     Icon: Sun
   },
   {
@@ -23,9 +25,9 @@ const SHIFTS = [
     label: 'Poste Soir',
     short: 'Soir',
     slot: '14:00 – 22:00',
-    accent: '#06b6d4',
-    ink: '#0e7490',
-    rgb: '6,182,212',
+    accent: CHART_PRIMARY,
+    ink: CHART_PRIMARY_STRONG,
+    rgb: CHART_PRIMARY_RGB,
     Icon: Sunset
   },
   {
@@ -33,15 +35,15 @@ const SHIFTS = [
     label: 'Poste Nuit',
     short: 'Nuit',
     slot: '22:00 – 06:00',
-    accent: '#8b5cf6',
-    ink: '#6d28d9',
-    rgb: '139,92,246',
+    accent: '#64748B',
+    ink: '#475569',
+    rgb: '100,116,139',
     Icon: MoonStar
   }
 ];
 
 const NUMBER_INPUT =
-  '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center font-mono text-3xl font-bold tabular text-slate-900 placeholder:text-slate-300 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100';
+  '[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-center font-mono text-3xl font-bold tabular text-slate-900 placeholder:text-slate-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100';
 
 function shiftIdForHour(hour) {
   if (hour >= 6 && hour < 14) return 'matin';
@@ -122,37 +124,38 @@ export default function ShiftEnergyCorrelation() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[11px] text-slate-500">
-          Production corrélée à l'énergie du poste · tarif {fmt(ENERGY_RATE, 3)} DT/kWh
-        </p>
-        <div className="flex items-center gap-2 font-mono text-[10px]">
-          <span
-            className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 shadow-card ${
-              meterFrozen
-                ? 'border-slate-200 bg-slate-50 text-slate-500'
-                : 'border-slate-200 bg-white text-slate-700'
-            }`}
-          >
+      <PageHeader
+        title="Shift energy correlation"
+        description={`Production corrélée à l'énergie du poste · tarif ${fmt(ENERGY_RATE, 3)} DT/kWh`}
+        actions={
+          <div className="flex items-center gap-2 font-mono text-[10px]">
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                meterFrozen ? 'bg-slate-300' : 'bg-emerald-500 pulse-dot'
+              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 ${
+                meterFrozen
+                  ? 'border-slate-200 bg-slate-50 text-slate-500'
+                  : 'border-slate-200 bg-white text-slate-700'
               }`}
-            ></span>
-            {meterFrozen
-              ? `compteur figé${Number.isFinite(metrics.energy) ? ` · ${fmt(metrics.energy, 1)} kWh` : ''}`
-              : `${fmt(metrics.energy, 1)} kWh`}
-          </span>
-          <span className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 tabular text-slate-700 shadow-card">
-            {clockNow(clock)}
-          </span>
-        </div>
-      </div>
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  meterFrozen ? 'bg-slate-300' : 'bg-energy-500 pulse-dot'
+                }`}
+              ></span>
+              {meterFrozen
+                ? `compteur figé${Number.isFinite(metrics.energy) ? ` · ${fmt(metrics.energy, 1)} kWh` : ''}`
+                : `${fmt(metrics.energy, 1)} kWh`}
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2.5 py-1.5 tabular text-slate-700">
+              {clockNow(clock)}
+            </span>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile
           icon={Database}
-          accent="#0284c7"
+          accent={CHART_PRIMARY}
           label="Énergie totale"
           value={fmt(totals.energy, 1)}
           sub="kWh · 3 postes"
@@ -166,14 +169,14 @@ export default function ShiftEnergyCorrelation() {
         />
         <StatTile
           icon={Package}
-          accent="#059669"
+          accent="#16A34A"
           label="Production totale"
           value={totals.hasProduction ? fmt(totals.produced, 0) : '--'}
           sub={totals.hasProduction ? 'pièces' : 'aucune saisie'}
         />
         <StatTile
           icon={Gauge}
-          accent="#7c3aed"
+          accent={CHART_PRIMARY}
           label="SEC global"
           value={totals.sec == null ? '--' : fmt(totals.sec, 3)}
           sub="kWh / pièce"
@@ -201,7 +204,7 @@ export default function ShiftEnergyCorrelation() {
             line={chartData.line}
             lineLabel="Énergie"
             lineUnit="kWh"
-            lineColor="#0891b2"
+            lineColor={CHART_PRIMARY}
             lineDecimals={1}
             height="h-72"
           />
@@ -235,18 +238,13 @@ function ShiftCard({ row, onChange, frozen }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border bg-white p-4 shadow-card transition ${
-        frozen ? 'border-slate-200' : live ? 'border-emerald-300' : 'border-slate-200'
+      className={`relative overflow-hidden rounded-lg border bg-white p-4 ${
+        frozen ? 'border-slate-200' : live ? 'border-energy-300' : 'border-slate-200'
       }`}
     >
-      <div
-        className="absolute inset-x-0 top-0 h-0.5"
-        style={{ background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }}
-      ></div>
-
-      <div className="mb-4 flex items-center gap-2.5">
+      <div className="mb-3 flex items-center gap-2.5">
         <span
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
           style={{ background: `${accent}1a`, color: ink }}
         >
           <Icon className="h-4 w-4" />
@@ -260,10 +258,10 @@ function ShiftCard({ row, onChange, frozen }) {
             className={`ml-auto flex items-center gap-1 rounded-md border px-1.5 py-1 text-[8px] font-bold uppercase tracking-wider ${
               frozen
                 ? 'border-slate-200 bg-slate-50 text-slate-400'
-                : 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                : 'border-energy-300 bg-energy-50 text-energy-700'
             }`}
           >
-            <span className={`h-1 w-1 rounded-full ${frozen ? 'bg-slate-300' : 'bg-emerald-500 pulse-dot'}`}></span>
+            <span className={`h-1 w-1 rounded-full ${frozen ? 'bg-slate-300' : 'bg-energy-500 pulse-dot'}`}></span>
             {frozen ? 'gelé' : 'en cours'}
           </span>
         )}
@@ -286,8 +284,8 @@ function ShiftCard({ row, onChange, frozen }) {
 
       <dl className="mt-4 space-y-2 border-t border-slate-100 pt-3 font-mono text-[11px]">
         <Stat label="Énergie" value={energy} decimals={2} unit="kWh" color={ink} frozen={frozen} />
-        <Stat label="Coût" value={cost} decimals={2} unit="DT" color="#b45309" frozen={frozen} />
-        <Stat label="SEC" value={sec} decimals={3} unit="kWh/pc" color="#0369a1" frozen={frozen} />
+        <Stat label="Coût" value={cost} decimals={2} unit="DT" color={CHART_PRIMARY} frozen={frozen} />
+        <Stat label="SEC" value={sec} decimals={3} unit="kWh/pc" color="#16A34A" frozen={frozen} />
       </dl>
     </div>
   );

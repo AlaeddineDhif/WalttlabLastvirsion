@@ -11,6 +11,7 @@ import {
   Legend
 } from 'chart.js';
 import { fmt } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler, Legend);
 ChartJS.defaults.font.family = "'JetBrains Mono', monospace";
@@ -24,7 +25,7 @@ const THEMES = {
     tooltipBorder: '#e2e8f0',
     tooltipTitle: '#0f172a',
     tooltipBody: '#334155',
-    grid: 'rgba(100,116,139,0.15)',
+    grid: 'rgba(100,116,139,0.12)',
     tick: '#94a3b8',
     reference: '#94a3b8'
   },
@@ -46,7 +47,8 @@ function gradientFor(rgb) {
     const { ctx, chartArea } = chart;
     if (!chartArea) return `rgba(${rgb},0.18)`;
     const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    grad.addColorStop(0, `rgba(${rgb},0.28)`);
+    grad.addColorStop(0, `rgba(${rgb},0.32)`);
+    grad.addColorStop(0.65, `rgba(${rgb},0.1)`);
     grad.addColorStop(1, `rgba(${rgb},0)`);
     return grad;
   };
@@ -88,8 +90,8 @@ export default function LineChart({
   label,
   unit,
   decimals = 3,
-  color = '#0d9488',
-  rgb = '13,148,136',
+  color = CHART_PRIMARY,
+  rgb = CHART_PRIMARY_RGB,
   reference = null,
   referenceLabel = 'Moyenne période',
   referenceColor = null,
@@ -136,7 +138,8 @@ export default function LineChart({
           borderWidth: 1,
           titleColor: palette.tooltipTitle,
           bodyColor: palette.tooltipBody,
-          padding: 10,
+          padding: 11,
+          cornerRadius: 10,
           boxPadding: 4,
           callbacks: {
             label: (ctx) => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y, decimals)} ${unit}`
@@ -184,7 +187,7 @@ export default function LineChart({
       borderColor: color,
       backgroundColor: gradientFor(rgb),
       borderWidth: 2,
-      tension: 0.3,
+      tension: 0.35,
       // A handful of points must stay visible as markers; a dense series would
       // turn into a solid band of dots. Points over the limit are always shown.
       pointRadius: (ctx) =>

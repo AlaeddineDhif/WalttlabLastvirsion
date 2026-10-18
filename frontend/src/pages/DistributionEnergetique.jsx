@@ -44,7 +44,7 @@ export default function DistributionEnergetique() {
         title="Distribution énergétique"
         subtitle={`Part de chaque atelier dans la consommation du mois, et poids de chaque poste machine. Période simulée : ${PERIOD.label}.`}
         scope="kWh · %"
-        accent="#059669"
+        accent="#16A34A"
         status="Données simulées"
         statusClass={CHIP.amber}
       />
@@ -114,8 +114,8 @@ export default function DistributionEnergetique() {
             labels={ranked.map((m) => m.label)}
             values={ranked.map((m) => m.kwh)}
             colors={ranked.map((m) => colorOf(m.workshop))}
-            color="#059669"
-            rgb="5,150,105"
+            color="#16A34A"
+            rgb="22,163,74"
             unit="kWh"
             decimals={0}
             height="h-[22rem]"

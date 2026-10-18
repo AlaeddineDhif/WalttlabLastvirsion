@@ -1,6 +1,6 @@
 export default function TelemetryLog({ packet, broker }) {
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-card">
+    <section className="wl-card p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[11px] font-bold uppercase tracking-wider text-slate-600">Live telemetry inspector</h2>
         <div className="flex items-center gap-3 font-mono text-[10px] text-slate-500">

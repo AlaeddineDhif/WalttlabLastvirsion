@@ -5,6 +5,7 @@ import { SectionCard, StatTile } from '../components/StatTile';
 import LineChart from '../components/LineChart';
 import { CHIP } from '../lib/tags';
 import { fmt, fmtCosPhi, fmtKvarh } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 import {
   ALERT_SUMMARY,
   AVG_COSPHI,
@@ -47,7 +48,7 @@ export default function SuiviDepassementCosPhi() {
         title="Suivi de dépassement"
         subtitle={`Facteur de puissance jour par jour comparé au seuil contractuel de ${fmt(CONTRACT.threshold, 2)}, ${PERIOD.label}. Tout point sous la ligne rouge est un franchissement : il alimente le registre repris par les Alertes.`}
         scope="cos φ · durée"
-        accent="#0d9488"
+        accent={CHART_PRIMARY}
         status="Données simulées"
         statusClass={CHIP.amber}
       />
@@ -89,9 +90,9 @@ export default function SuiviDepassementCosPhi() {
                     onClick={() => setLevel(g.key)}
                     aria-pressed={active}
                     title={g.hint}
-                    className={`rounded-md border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                    className={`rounded-md border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider transition-colors ${
                       active
-                        ? 'border-teal-200 bg-teal-50 text-teal-700'
+                        ? 'border-brand-200 bg-brand-50 text-brand-700'
                         : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
                     }`}
                   >
@@ -100,8 +101,8 @@ export default function SuiviDepassementCosPhi() {
                 );
               })}
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-700">
-              <span aria-hidden="true" className="h-0.5 w-3 bg-rose-500"></span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-red-700">
+              <span aria-hidden="true" className="h-0.5 w-3 bg-red-500"></span>
               Seuil {fmt(CONTRACT.threshold, 2)}
             </span>
           </div>
@@ -113,8 +114,8 @@ export default function SuiviDepassementCosPhi() {
           label="Cos φ"
           unit="cos φ"
           decimals={2}
-          color="#0d9488"
-          rgb="13,148,136"
+          color={CHART_PRIMARY}
+          rgb={CHART_PRIMARY_RGB}
           reference={chart.reference}
           referenceLabel={chart.referenceLabel}
           referenceColor={chart.referenceColor}
@@ -127,7 +128,7 @@ export default function SuiviDepassementCosPhi() {
 
         <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 border-t border-slate-100 pt-3 font-mono text-[10px] text-slate-500">
           <span className="inline-flex items-center gap-1.5">
-            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-rose-600"></span>
+            <span aria-hidden="true" className="h-2 w-2 rounded-full bg-red-600"></span>
             Sous le seuil de {fmt(CONTRACT.threshold, 2)}
           </span>
           <span>Moyenne annuelle : {fmtCosPhi(AVG_COSPHI)}</span>
@@ -177,7 +178,7 @@ export default function SuiviDepassementCosPhi() {
         registered breaches themselves live in the Alertes sub-module.
       */}
       <p className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[11px] leading-4 text-slate-600">
-        <TrendingUp className="mt-px h-3.5 w-3.5 shrink-0 text-teal-600" />
+        <TrendingUp className="mt-px h-3.5 w-3.5 shrink-0 text-brand-600" />
         <span>
           Cos φ le plus bas de l’année : {fmtCosPhi(MIN_COSPHI.cosPhi)} le {MIN_COSPHI.label}, soit{' '}
           {fmtCosPhi(CONTRACT.threshold - MIN_COSPHI.cosPhi)} sous le seuil contractuel. Les{' '}
@@ -209,7 +210,7 @@ export default function SuiviDepassementCosPhi() {
               <li
                 key={m.key}
                 className={`rounded-lg border px-2 py-1.5 text-center ${
-                  breached ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-slate-50'
+                  breached ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'
                 }`}
               >
                 <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
@@ -217,7 +218,7 @@ export default function SuiviDepassementCosPhi() {
                 </div>
                 <div
                   className={`tabular font-mono text-[12px] font-bold ${
-                    breached ? 'text-rose-700' : 'text-slate-800'
+                    breached ? 'text-red-700' : 'text-slate-800'
                   }`}
                 >
                   {fmtCosPhi(m.minCosPhi)}

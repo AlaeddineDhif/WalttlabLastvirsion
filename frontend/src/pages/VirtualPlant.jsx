@@ -3,9 +3,11 @@ import { DatabaseZap, Building2, Gauge, Factory, Cpu, Zap, Power } from 'lucide-
 import BarChart from '../components/BarChart';
 import ComboChart from '../components/ComboChart';
 import { SectionCard, StatTile, Bar, LoadingBlock } from '../components/StatTile';
+import PageHeader from '../components/PageHeader';
 import useWorkload from '../hooks/useWorkload';
 import { useTelemetry } from '../context/TelemetryContext';
 import { fmt, fmtKwh, fmtKwhUnit } from '../lib/format';
+import { CHART_PRIMARY, CHART_PRIMARY_RGB } from '../lib/brand';
 
 const HOUR_LABELS = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
 
@@ -32,10 +34,14 @@ export default function VirtualPlant() {
 
   return (
     <div className="space-y-4">
+      <PageHeader
+        title="Virtual plant"
+        description="Deterministic simulated plant feeding the analytics modules when no hardware is connected"
+      />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatTile
           icon={Power}
-          accent="#7c3aed"
+          accent={CHART_PRIMARY}
           label="Generator state"
           value={data.running ? 'Running' : 'Paused'}
           sub={data.running ? `ticking every ${fmt(data.intervalMs / 1000, 1)} s` : 'feed idle or real MQTT detected'}
@@ -43,7 +49,7 @@ export default function VirtualPlant() {
         />
         <StatTile
           icon={Gauge}
-          accent="#0284c7"
+          accent={CHART_PRIMARY}
           label="Installed capacity"
           value={fmt(data.installedKva, 0)}
           sub={`kVA · ${fmt(data.effectiveKva, 0)} kVA effective`}
@@ -57,14 +63,14 @@ export default function VirtualPlant() {
         />
         <StatTile
           icon={Factory}
-          accent="#2563eb"
+          accent={CHART_PRIMARY}
           label="Live demand"
           value={fmt(live.kva, 1)}
           sub={`kVA · ${fmt(live.kw, 1)} kW at ${String(live.hour).padStart(2, '0')}:00`}
         />
         <StatTile
           icon={Cpu}
-          accent="#059669"
+          accent="#16A34A"
           label="Live output"
           value={fmt(live.unitsPerHour, 1)}
           sub={`pieces/h · cos φ ${fmt(live.pf, 2)}`}
@@ -90,7 +96,7 @@ export default function VirtualPlant() {
                 <button
                   onClick={() => setDept('')}
                   className={`rounded-md px-2.5 py-1 text-[10px] font-semibold transition ${
-                    !dept ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                    !dept ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
                   All
@@ -100,7 +106,7 @@ export default function VirtualPlant() {
                     key={d.id}
                     onClick={() => setDept(d.id)}
                     className={`rounded-md px-2.5 py-1 text-[10px] font-semibold transition ${
-                      dept === d.id ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+                      dept === d.id ? 'bg-brand-600 text-white' : 'text-slate-600 hover:bg-slate-50'
                     }`}
                   >
                     {d.short || d.name.split(' ')[0]}
@@ -111,7 +117,7 @@ export default function VirtualPlant() {
                 onClick={toggleDemo}
                 className={`rounded-lg border px-2.5 py-1.5 text-[10px] font-semibold transition ${
                   demo
-                    ? 'border-sky-300 bg-sky-50 text-sky-700 hover:bg-sky-100'
+                    ? 'border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100'
                     : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
                 }`}
               >
@@ -126,12 +132,12 @@ export default function VirtualPlant() {
               bars={scoped.map((d) => d.kva)}
               barLabel={scoped.length === 1 ? `${scoped[0].name} demand` : 'Departmental demand'}
               barUnit="kVA"
-              barRgb="124,58,237"
-              barColor="#7c3aed"
+              barRgb={CHART_PRIMARY_RGB}
+              barColor={CHART_PRIMARY}
               line={data.profile}
               lineLabel="Plant load shape"
               lineUnit="×"
-              lineColor="#d97706"
+              lineColor="#475569"
               lineDecimals={2}
               height="h-72"
             />

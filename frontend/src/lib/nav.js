@@ -1,5 +1,6 @@
-import { Zap, Activity, GitCompareArrows, ChartColumn, Gauge, Sigma } from 'lucide-react';
+import { Zap, ReceiptText, Activity, GitCompareArrows, ChartColumn, Gauge, Sigma } from 'lucide-react';
 import { DEFAULT_MODE } from './modes';
+import { BRAND_NAVY } from './brand';
 import { CONSO_SUB_MODULES } from './consoSubModules';
 import { PUISSANCE_SUB_MODULES } from './puissanceSubModules';
 import { COSPHI_SUB_MODULES } from './cosPhiSubModules';
@@ -12,12 +13,21 @@ import { COSPHI_SUB_MODULES } from './cosPhiSubModules';
 export const NAV = [
   {
     id: 'consommation',
-    label: 'Temps réel',
-    short: 'Réel',
+    label: 'Dashboard',
+    short: 'Board',
     icon: Zap,
     modes: ['live'],
-    description: 'Temps réel : tension, courant, puissance active et cos φ',
-    accent: '#0284c7'
+    description: 'Live bill, cost forecast, savings and executive KPIs',
+    accent: '#16a34a'
+  },
+  {
+    id: 'billing',
+    label: 'Billing & Cost',
+    short: 'Facture',
+    icon: ReceiptText,
+    modes: ['live'],
+    description: 'Digital STEG invoice, charges, taxes and 12-month evolutions',
+    accent: BRAND_NAVY
   },
   {
     id: 'live',
@@ -26,7 +36,7 @@ export const NAV = [
     icon: Activity,
     modes: ['live'],
     description: 'Streaming ESP32 : signaux bruts, trames MQTT et journal broker',
-    accent: '#0d9488'
+    accent: BRAND_NAVY
   },
   {
     id: 'shift-correlation',
@@ -35,7 +45,7 @@ export const NAV = [
     icon: GitCompareArrows,
     modes: ['live'],
     description: 'Production vs énergie par poste : SEC, cible vs réalisé',
-    accent: '#059669'
+    accent: '#16A34A'
   },
   {
     id: 'analytics-consommation',
@@ -44,7 +54,7 @@ export const NAV = [
     icon: ChartColumn,
     modes: ['analytics'],
     description: 'Consommation d’énergie par atelier, poste et période',
-    accent: '#059669',
+    accent: '#16A34A',
     // The sub-menu is declared as data, taken straight from the shared registry,
     // so the sidebar tree and the router always resolve the same ordered list.
     children: CONSO_SUB_MODULES
@@ -66,7 +76,7 @@ export const NAV = [
     icon: Sigma,
     modes: ['analytics'],
     description: 'Facteur de puissance, seuils et pénalités de réactif',
-    accent: '#0d9488',
+    accent: BRAND_NAVY,
     children: COSPHI_SUB_MODULES
   }
 ];

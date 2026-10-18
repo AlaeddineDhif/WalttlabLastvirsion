@@ -1,7 +1,7 @@
 import { RadioTower, ChartPie } from 'lucide-react';
 
 /**
- * Two operational views of WattLab. `id` is persisted in localStorage and drives
+ * Two operational views of WatLab. `id` is persisted in localStorage and drives
  * which modules the sidebar and router expose.
  */
 export const MODES = [

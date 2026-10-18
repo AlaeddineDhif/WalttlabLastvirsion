@@ -42,14 +42,14 @@ export default function AlertesCosPhi() {
           label="Alertes déclenchées"
           value={fmt(total, 0)}
           sub={`jours sous cos φ ${fmt(CONTRACT.threshold, 2)} · ${HOURS_BELOW} h cumulées`}
-          accent={total > 0 ? '#b45309' : '#059669'}
+          accent={total > 0 ? '#b45309' : '#16A34A'}
         />
         <StatTile
           icon={TriangleAlert}
           label="Alertes critiques"
           value={fmt(critical, 0)}
           sub={`sous cos φ ${fmt(CRITICAL_THRESHOLD, 2)} · ${warning} en simple avertissement`}
-          accent={critical > 0 ? '#dc2626' : '#059669'}
+          accent={critical > 0 ? '#dc2626' : '#16A34A'}
           tone={critical > 0 ? 'critical' : 'good'}
         />
         <StatTile
@@ -66,8 +66,8 @@ export default function AlertesCosPhi() {
         subtitle={`${total} alerte${total > 1 ? 's' : ''} enregistrée${total > 1 ? 's' : ''} · dérivée du cos φ mesuré, jamais déclarée à la main`}
         icon={Sigma}
         actions={
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-rose-700">
-            <span aria-hidden="true" className="h-0.5 w-3 bg-rose-500"></span>
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-red-700">
+            <span aria-hidden="true" className="h-0.5 w-3 bg-red-500"></span>
             Seuil {fmt(CONTRACT.threshold, 2)} · critique {fmt(CRITICAL_THRESHOLD, 2)}
           </span>
         }

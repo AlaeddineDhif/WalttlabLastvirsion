@@ -1,6 +1,14 @@
-import { Zap, LogOut, ShieldCheck, PanelLeftClose, ChevronRight } from 'lucide-react';
+import { Zap, LogOut, ShieldCheck, PanelLeftClose, RadioTower } from 'lucide-react';
 import { getNav } from '../lib/nav';
 import { findMode } from '../lib/modes';
+import BrandLogo from './BrandLogo';
+import {
+  BRAND_NAVY,
+  BRAND_NAVY_TINT,
+  BRAND_CYAN,
+  BRAND_CYAN_RGB,
+  BRAND_CYAN_INK
+} from '../lib/brand';
 
 export default function Sidebar({
   view,
@@ -20,108 +28,113 @@ export default function Sidebar({
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-30 bg-slate-900/30 lg:hidden" onClick={onClose}></div>}
+      {open && <div className="fixed inset-0 z-30 bg-ink/50 lg:hidden" onClick={onClose}></div>}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200 bg-white transition-all duration-200 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col transition-all duration-200 lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
-        } ${collapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'} w-[260px]`}
+        } ${collapsed ? 'lg:w-[80px]' : 'lg:w-[248px]'} w-[248px]`}
+        style={{ background: '#334155', color: '#CBD5E1', borderRight: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 px-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 shadow-card">
-            <Zap className="h-5 w-5 text-sky-400" />
-          </div>
+        {/* Brand */}
+        <div className="flex h-14 shrink-0 items-center gap-2.5 px-3.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <BrandLogo size={collapsed ? 'sidebarCollapsed' : 'sidebar'} plate />
           <div className={`min-w-0 leading-tight ${collapsed ? 'lg:hidden' : ''}`}>
-            <h1 className="truncate text-[15px] font-extrabold tracking-tight text-slate-900">
-              WattLab <span className="font-medium text-slate-500">EMS</span>
+            <h1 className="truncate text-[13px] font-semibold tracking-tight" style={{ color: '#FFFFFF' }}>
+              WatLab
             </h1>
-            <p className="truncate text-[10px] font-medium tracking-wide text-slate-500">
-              Energy Management System
+            <p className="truncate text-[9px] uppercase tracking-[0.14em]" style={{ color: '#94A3B8' }}>
+              Energy management
             </p>
           </div>
           <button
             onClick={onClose}
-            className="ml-auto rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 lg:hidden"
+            aria-label="Close navigation"
+            className="ml-auto rounded-md p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white lg:hidden"
           >
             <PanelLeftClose className="h-4 w-4" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
+        <nav className="flex-1 overflow-y-auto px-2.5 py-3">
+          {/* Active mode */}
           <div
-            className={`mb-4 rounded-lg border border-slate-200 bg-slate-50 p-3 ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
+            className={`mb-3 rounded-md px-2.5 py-2 ${collapsed ? 'lg:hidden' : ''}`}
+            style={{ border: '1px solid rgba(255,255,255,0.08)', background: '#526277', borderRadius: '12px' }}
           >
-            <div className="flex items-center gap-2 text-[11px] font-bold text-slate-800">
-              <ModeIcon
-                className="h-3.5 w-3.5 shrink-0"
-                style={{ color: modeDef?.id === 'live' ? '#059669' : '#4338ca' }}
-              />
+            <div className="flex items-center gap-2 text-[11px] font-semibold" style={{ color: '#F8FAFC' }}>
+              <ModeIcon className="h-3.5 w-3.5 shrink-0" style={{ color: '#CBD5E1' }} />
               <span className="truncate">{modeDef?.label || 'Live IoT Mode'}</span>
             </div>
-            <p className="mt-1 font-mono text-[10px] leading-4 text-slate-500">
+            <p className="mt-0.5 truncate font-mono text-[10px] leading-4" style={{ color: '#94A3B8' }}>
               {modeDef?.tagline}
             </p>
           </div>
 
           <p
-            className={`mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${
-              collapsed ? 'lg:hidden' : ''
-            }`}
+            className={`mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider ${collapsed ? 'lg:hidden' : ''}`}
+            style={{ color: '#94A3B8' }}
           >
             Modules
           </p>
-          <ul className="space-y-1">
+
+          <ul className="space-y-0.5">
             {nav.map((item) => {
               const active = item.id === view;
               const Icon = item.icon;
               const children = item.children || [];
-              // The group opens when it is selected itself, or when one of its
-              // sub-sections is: clicking the parent reveals its sub-menu.
               const childActive = children.some((c) => c.id === view);
-              const open = children.length > 0 && (active || childActive);
+              const openGroup = children.length > 0 && (active || childActive);
               return (
                 <li key={item.id}>
                   <button
                     onClick={() => onNavigate(item.id)}
                     title={collapsed ? item.label : undefined}
-                    className={`group relative flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition ${
-                      active
-                        ? 'bg-slate-900 text-white shadow-card'
+                    aria-current={active ? 'page' : undefined}
+                    className="group relative flex w-full items-center gap-2.5 px-2.5 py-2 text-left transition"
+                    style={{
+                      borderRadius: '10px',
+                      ...(active
+                        ? { background: '#DEEBF7', color: BRAND_NAVY, fontWeight: 600 }
                         : childActive
-                          ? 'bg-slate-100 text-slate-900'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
+                          ? { background: BRAND_NAVY_TINT, color: '#F8FAFC' }
+                          : { color: '#CBD5E1', background: 'transparent' })
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!active && !childActive) {
+                        e.currentTarget.style.background = `rgba(${BRAND_CYAN_RGB},0.14)`;
+                        e.currentTarget.style.color = '#FFFFFF';
+                        const icon = e.currentTarget.querySelector('svg');
+                        if (icon) icon.style.color = BRAND_CYAN;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active && !childActive) {
+                        e.currentTarget.style.background = 'transparent';
+                        e.currentTarget.style.color = '#CBD5E1';
+                        const icon = e.currentTarget.querySelector('svg');
+                        if (icon) icon.style.color = '#CBD5E1';
+                      }
+                    }}
                   >
-                    <span
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                      style={active ? { background: 'rgba(255,255,255,0.12)' } : { background: `${item.accent}14` }}
-                    >
-                      <Icon
-                        className="h-4 w-4"
-                        style={{ color: active ? '#ffffff' : item.accent }}
-                      />
-                    </span>
+                    <Icon
+                      className="h-4 w-4 shrink-0 transition"
+                      style={{
+                        color: active ? BRAND_NAVY : childActive ? BRAND_CYAN : '#CBD5E1'
+                      }}
+                    />
                     <span className={`min-w-0 flex-1 ${collapsed ? 'lg:hidden' : ''}`}>
-                      <span className="block truncate text-[12px] font-semibold leading-tight">{item.label}</span>
-                      <span
-                        className={`mt-0.5 block truncate text-[10px] leading-tight ${
-                          active ? 'text-slate-300' : 'text-slate-400'
-                        } ${collapsed ? 'lg:hidden' : ''}`}
-                      >
-                        {item.description}
+                      <span className="block truncate text-[12.5px] leading-tight">
+                        {item.label}
                       </span>
                     </span>
-                    {active && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
                   </button>
 
-                  {open && (
+                  {openGroup && (
                     <ul
                       aria-label={`Sous-sections ${item.label}`}
-                      className={`ml-5 mt-1 space-y-0.5 border-l border-slate-200 pl-3 ${
-                        collapsed ? 'lg:hidden' : ''
-                      }`}
+                      className={`ml-4 mt-0.5 space-y-0.5 pl-2.5 ${collapsed ? 'lg:hidden' : ''}`}
+                      style={{ borderLeft: '1px solid rgba(255,255,255,0.08)' }}
                     >
                       {children.map((child) => {
                         const cActive = child.id === view;
@@ -132,22 +145,35 @@ export default function Sidebar({
                               onClick={() => onNavigate(child.id)}
                               title={child.label}
                               aria-current={cActive ? 'page' : undefined}
-                              className={`flex w-full items-center gap-2 rounded-md py-1.5 pl-1.5 pr-2 text-left transition ${
-                                cActive
-                                  ? 'bg-white text-slate-900 shadow-card ring-1 ring-slate-200'
-                                  : 'text-slate-500 hover:bg-white hover:text-slate-800'
-                              }`}
+                              className="flex w-full items-center gap-2 px-2 py-1.5 text-left transition"
+                              style={{
+                                borderRadius: '10px',
+                                ...(cActive
+                                  ? { background: '#DEEBF7', color: BRAND_NAVY, fontWeight: 600 }
+                                  : { color: '#CBD5E1', background: 'transparent' })
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!cActive) {
+                                  e.currentTarget.style.background = `rgba(${BRAND_CYAN_RGB},0.14)`;
+                                  e.currentTarget.style.color = '#FFFFFF';
+                                  const icon = e.currentTarget.querySelector('svg');
+                                  if (icon) icon.style.color = BRAND_CYAN;
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!cActive) {
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.color = '#CBD5E1';
+                                  const icon = e.currentTarget.querySelector('svg');
+                                  if (icon) icon.style.color = '#CBD5E1';
+                                }
+                              }}
                             >
-                              <span
-                                aria-hidden="true"
-                                className="h-3.5 w-0.5 shrink-0 rounded-full"
-                                style={{ background: cActive ? child.accent : '#cbd5e1' }}
-                              />
                               <CIcon
-                                className="h-3.5 w-3.5 shrink-0"
-                                style={{ color: cActive ? child.accent : 'currentColor' }}
+                                className="h-3.5 w-3.5 shrink-0 transition"
+                                style={{ color: cActive ? BRAND_NAVY : '#CBD5E1' }}
                               />
-                              <span className="min-w-0 flex-1 truncate text-[11px] font-semibold leading-tight">
+                              <span className="min-w-0 flex-1 truncate text-[11.5px] leading-tight">
                                 {child.label}
                               </span>
                             </button>
@@ -161,39 +187,36 @@ export default function Sidebar({
             })}
           </ul>
 
-          <div className="mt-6">
+          {/* Feed source */}
+          <div className="mt-5">
             <p
-              className={`mb-2 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 ${
-                collapsed ? 'lg:hidden' : ''
-              }`}
+              className={`mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider ${collapsed ? 'lg:hidden' : ''}`}
+              style={{ color: '#94A3B8' }}
             >
               Feed source
             </p>
             <div
-              className={`rounded-lg border border-slate-200 bg-slate-50 p-3 ${collapsed ? 'lg:hidden' : ''}`}
+              className={`px-2.5 py-2 ${collapsed ? 'lg:hidden' : ''}`}
+              style={{ border: '1px solid rgba(255,255,255,0.08)', background: '#526277', borderRadius: '12px' }}
             >
               {modeDef?.id === 'analytics' ? (
                 <>
-                  <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
-                    <span className="h-2 w-2 rounded-full bg-slate-300"></span>
-                    Aucune source branchée
+                  <div className="flex items-center gap-2 text-[11px]" style={{ color: '#94A3B8' }}>
+                    <RadioTower className="h-3.5 w-3.5" style={{ color: '#94A3B8' }} />
+                    No source connected
                   </div>
-                  <p className="mt-1 font-mono text-[10px] leading-4 text-slate-500">
-                    Modules réservés · relevés en attente
+                  <p className="mt-0.5 font-mono text-[10px] leading-4" style={{ color: '#94A3B8' }}>
+                    Historical dataset only
                   </p>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-700">
-                    <span
-                      className={`h-2 w-2 rounded-full pulse-dot ${
-                        demo ? 'bg-sky-500' : 'bg-slate-400'
-                      }`}
-                    ></span>
+                  <div className="flex items-center gap-2 text-[11px] font-medium" style={{ color: '#F8FAFC' }}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${demo ? 'bg-accent-400' : 'bg-amber-400'}`} />
                     {demo ? 'Virtual plant' : 'Live MQTT'}
                   </div>
-                  <p className="mt-1 font-mono text-[10px] leading-4 text-slate-500">
-                    {demo ? 'Simulated departmental workload' : 'Broker telemetry only'}
+                  <p className="mt-0.5 font-mono text-[10px] leading-4" style={{ color: '#94A3B8' }}>
+                    {demo ? 'Simulated departmental workload' : 'Broker telemetry'}
                   </p>
                 </>
               )}
@@ -201,30 +224,59 @@ export default function Sidebar({
           </div>
         </nav>
 
-        <div className="shrink-0 space-y-2 border-t border-slate-200 p-3">
-          <div className={`flex items-center gap-2 rounded-lg bg-slate-50 p-2 ${collapsed ? 'lg:hidden' : ''}`}>
-            <ShieldCheck className="h-4 w-4 shrink-0 text-slate-400" />
+        {/* Account + controls */}
+        <div className="shrink-0 space-y-2 p-2.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <div
+            className={`flex items-center gap-2.5 px-2.5 py-2 ${collapsed ? 'lg:hidden' : ''}`}
+            style={{ border: '1px solid rgba(255,255,255,0.08)', background: '#526277', borderRadius: '12px' }}
+          >
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md" style={{ background: '#526277' }}>
+              <ShieldCheck className="h-3.5 w-3.5" style={{ color: '#CBD5E1' }} />
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11px] font-semibold text-slate-700">
+              <p className="truncate text-[11.5px] font-medium" style={{ color: '#F8FAFC' }}>
                 {user?.displayName || 'Energy Manager'}
               </p>
-              <p className="truncate font-mono text-[9px] text-slate-400">{user?.role || 'viewer'}</p>
+              <p className="truncate font-mono text-[9px] uppercase tracking-wider" style={{ color: '#94A3B8' }}>
+                {user?.role || 'viewer'}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={onToggleCollapse}
               title={collapsed ? 'Expand menu' : 'Collapse menu'}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-2 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-50"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium transition"
+              style={{ color: '#CBD5E1', background: '#526277', border: '1px solid rgba(255,255,255,0.08)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#2563EB';
+                e.currentTarget.style.color = '#FFFFFF';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#526277';
+                e.currentTarget.style.color = '#CBD5E1';
+              }}
             >
-              <PanelLeftClose className="h-3.5 w-3.5" />
+              <PanelLeftClose className={`h-3.5 w-3.5 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
               <span className={collapsed ? 'lg:hidden' : ''}>Collapse</span>
             </button>
             <button
               onClick={onLogout}
               title="Sign out"
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-[11px] font-semibold text-slate-600 transition hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700"
+              aria-label="Sign out"
+              className="flex items-center justify-center rounded-md px-2.5 py-1.5 transition"
+              style={{ color: '#CBD5E1', background: '#334155', border: '1px solid rgba(255,255,255,0.08)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239,68,68,0.15)';
+                e.currentTarget.style.color = '#FCA5A5';
+                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#526277';
+                e.currentTarget.style.color = '#CBD5E1';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+              }}
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
@@ -236,5 +288,6 @@ export default function Sidebar({
 }
 
 export function SidebarSpacer({ collapsed }) {
-  return <div className={`hidden shrink-0 lg:block ${collapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'}`}></div>;
+  const width = collapsed ? 'lg:w-[80px]' : 'lg:w-[248px]';
+  return <div className={`hidden lg:block ${width}`} aria-hidden="true" />;
 }
